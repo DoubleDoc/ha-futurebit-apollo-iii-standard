@@ -111,6 +111,8 @@ class GeneralErrorState:
         self.run = None
         self.prev_uptime = None
         self.prev_reconnects = None
+        # Monotonic time HA saw the miner restart (uptime went backwards).
+        self.restart_seen = None
         logs.async_add_listener(self.update)
         miner.async_add_listener(self.update)
 
@@ -219,8 +221,14 @@ class GeneralErrorState:
                     self._incident(f"{run}|process|restart", run, "process", True,
                                    "Miner restarted unexpectedly", now_text)
                 self.prev_reconnects = None
+                self.restart_seen = time.monotonic()
             self.prev_uptime = uptime
             self.run = run
+            # The controller has no RTC: after a reboot its clock jumps forward
+            # when NTP syncs, and the miner's upTime includes the jump. Count
+            # the warm-up from when HA saw the restart as well.
+            if self.restart_seen is not None:
+                uptime = min(uptime, time.monotonic() - self.restart_seen)
 
             # Event: pool reconnection (the counter is per miner run).
             pool = ((stats.get("pool") or {}).get("intervals") or {}).get("int_0") or {}

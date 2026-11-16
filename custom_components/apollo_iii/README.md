@@ -57,3 +57,6 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 - **Controls.** The miner loads its settings only at startup; saving (from HA or the Apollo UI) just rewrites its config. HA still doesn't restart the miner, but a new `Restart needed` binary sensor turns on when the saved settings differ from the ones the running miner loaded. It compares what the backend would put on the miner command line (power mode and fan control), so changes the miner would ignore don't count. Its `pending_changes` attribute lists the differences; press `Restart miner` to apply them. Pool settings aren't tracked.
 - **New `Fan mode` select:** Automatic, Temperature target, or Fixed PWM. It is the only way back to automatic fan control from HA, and shows when a fixed PWM is overriding the temperature target.
 - Removed unused `faults.py`.
+
+### v0.4.1
+- The miner's `upTime` can include the controller's clock jump at boot (no RTC; NTP sets the time after the miner starts), so `Miner uptime` can read longer than the controller has been up. The fault monitor's warm-up periods now also count from when HA saw the restart, so a reboot cannot skip them.
