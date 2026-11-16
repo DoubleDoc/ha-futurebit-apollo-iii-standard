@@ -76,3 +76,9 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 ### v0.4.8
 - Fix HA deprecation warning (breaks in 2027.2): sensors no longer use the `group` attribute name, which HA now reserves for entity groups.
 - `Tuning state` restores its watch start (`watching_since`) across HA restarts, so it no longer reads unknown for 10 minutes after each restart.
+
+### v0.5.0: setup and configuration
+- Setup form with labels and help text (custom integrations need `translations/en.json`), a masked password field, and separate errors for a wrong password, an unreachable miner, and unexpected errors. No default IP.
+- **Reconfigure** (change host, port or password) and **reauthentication** when the miner rejects the saved password (setup fails with a reauth prompt instead of polling with a bad password).
+- **DHCP discovery** by hostname `futurebit-apollo*`; for a miner already set up, discovery updates its IP automatically.
+- Config entries are identified by the controller's MAC address instead of host:port. Existing entries are migrated at startup.

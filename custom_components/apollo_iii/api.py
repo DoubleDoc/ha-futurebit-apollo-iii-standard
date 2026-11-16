@@ -9,6 +9,9 @@ _LOGGER = logging.getLogger(__name__)
 class ApolloAPIError(Exception):
     """API or GraphQL failure."""
 
+class ApolloAuthError(ApolloAPIError):
+    """The miner rejected the password (or a token after re-login)."""
+
 class ApolloAPI:
     def __init__(self, session: ClientSession, host: str, port: int, password: str):
         self.session = session
@@ -41,12 +44,17 @@ class ApolloAPI:
             raise ApolloAPIError(f"GraphQL response error: {err}") from err
         errors = payload.get("errors") or []
         if errors:
-            if auth and retry and any(
-                e.get("extensions", {}).get("code") == "UNAUTHENTICATED" for e in errors
-            ):
+            message = "; ".join(e.get("message", "GraphQL error") for e in errors)
+            unauthenticated = any(
+                (e.get("extensions") or {}).get("code") == "UNAUTHENTICATED" for e in errors)
+            if unauthenticated and auth and retry:
+                # Token expired: log in again once.
                 self.token = None
-                return await self._request(query, variables, auth=True, retry=False)
-            raise ApolloAPIError("; ".join(e.get("message", "GraphQL error") for e in errors))
+                return await self._request(query, variables, auth=True, retry=False,
+                                           read_only=read_only)
+            if unauthenticated:
+                raise ApolloAuthError(message)
+            raise ApolloAPIError(message)
         return payload.get("data") or {}
 
     async def login(self):
@@ -63,10 +71,10 @@ class ApolloAPI:
             )
             response = data.get("Auth", {}).get("login") or {}
             if response.get("error"):
-                raise ApolloAPIError(response["error"].get("message", "Login failed"))
+                raise ApolloAuthError(response["error"].get("message", "Login failed"))
             self.token = (response.get("result") or {}).get("accessToken")
             if not self.token:
-                raise ApolloAPIError("Login returned no access token")
+                raise ApolloAuthError("Login returned no access token")
 
     @staticmethod
     def unwrap(data, root, field):
@@ -74,6 +82,17 @@ class ApolloAPI:
         if response.get("error"):
             raise ApolloAPIError(response["error"].get("message", "Unknown API error"))
         return response.get("result") or {}
+
+    @staticmethod
+    def device_mac(mcu):
+        """Hardware identity: the wired MAC, else the first non-empty one."""
+        networks = mcu.get("network") or []
+        for name in ("eth0", None):
+            for net in networks:
+                mac = (net.get("mac") or "").strip().lower()
+                if mac and (name is None or net.get("name") == name):
+                    return mac
+        return None
 
     async def get_mcu(self):
         data = await self._request("""{

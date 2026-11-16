@@ -1,0 +1,65 @@
+{
+  "config": {
+    "flow_title": "Apollo III ({host})",
+    "step": {
+      "user": {
+        "title": "Connect FutureBit Apollo III",
+        "description": "Enter the miner's address and its Apollo dashboard password. The Apollo has no username.",
+        "data": {
+          "host": "Host",
+          "port": "API port",
+          "password": "Dashboard password"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the Apollo III controller, for example 192.168.1.50.",
+          "port": "Port of the Apollo API. Leave at 5000 unless you changed it.",
+          "password": "The password you use to log in to the Apollo web dashboard."
+        }
+      },
+      "dhcp_confirm": {
+        "title": "Apollo III found",
+        "description": "An Apollo III was found at {host}. Enter its dashboard password to add it.",
+        "data": {
+          "port": "API port",
+          "password": "Dashboard password"
+        },
+        "data_description": {
+          "port": "Port of the Apollo API. Leave at 5000 unless you changed it.",
+          "password": "The password you use to log in to the Apollo web dashboard."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Apollo III",
+        "description": "Change the miner's address, port or password. Leave the password blank to keep the current one.",
+        "data": {
+          "host": "Host",
+          "port": "API port",
+          "password": "Dashboard password"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the Apollo III controller.",
+          "port": "Port of the Apollo API. Leave at 5000 unless you changed it.",
+          "password": "Only needed if the dashboard password changed."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Apollo III password changed",
+        "description": "The Apollo III at {host} rejected the saved password. Enter the current dashboard password.",
+        "data": {
+          "password": "Dashboard password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the Apollo API. Check the host and port, and that the miner is powered on.",
+      "invalid_auth": "The miner rejected the password.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This Apollo III is already set up.",
+      "reauth_successful": "Password updated.",
+      "reconfigure_successful": "Apollo III settings updated.",
+      "wrong_device": "That address belongs to a different Apollo III than this entry."
+    }
+  }
+}

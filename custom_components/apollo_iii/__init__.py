@@ -6,8 +6,10 @@ from homeassistant.util import dt as dt_util
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from .api import ApolloAPI, ApolloAPIError
+from .api import ApolloAPI, ApolloAPIError, ApolloAuthError
 from .registry_cleanup import async_cleanup
 from .const import (DOMAIN, MINER_INTERVAL, MCU_INTERVAL, SETTINGS_INTERVAL, LOG_INTERVAL,
                     STATS_STALE_AFTER, STATS_MAX_CLOCK_SKEW, LOG_STALE_AFTER)
@@ -78,9 +80,9 @@ def log_fetcher(api):
 
 
 class ApolloCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, api, name, interval, fetch):
+    def __init__(self, hass, entry, api, name, interval, fetch):
         super().__init__(
-            hass, _LOGGER, name=f"Apollo III {name}",
+            hass, _LOGGER, config_entry=entry, name=f"Apollo III {name}",
             update_interval=timedelta(seconds=interval)
         )
         self.api = api
@@ -94,6 +96,9 @@ class ApolloCoordinator(DataUpdateCoordinator):
             self._consecutive_failures = 0
             self.last_success = dt_util.utcnow()
             return result
+        except ApolloAuthError as err:
+            # Password changed on the miner: HA starts the reauth flow.
+            raise ConfigEntryAuthFailed(str(err)) from err
         except ApolloAPIError as err:
             self._consecutive_failures += 1
             if self.name == "Apollo III mcu" and self.data is not None and self._consecutive_failures == 1:
@@ -101,20 +106,46 @@ class ApolloCoordinator(DataUpdateCoordinator):
                 return self.data
             raise UpdateFailed(str(err)) from err
 
+def _migrate_unique_id(hass, entry, mcu):
+    """Entries created before v0.5.0 are keyed by host:port; key them by the
+    controller MAC (as the config flow now does) so an IP change, or DHCP
+    discovery, maps to the same entry. Retried at each setup until it works."""
+    from .config_flow import is_mac
+    if is_mac(entry.unique_id) or not mcu:
+        return
+    mac = ApolloAPI.device_mac(mcu)
+    if not mac:
+        return
+    unique_id = format_mac(mac)
+    if any(e.unique_id == unique_id for e in hass.config_entries.async_entries(DOMAIN)):
+        return
+    hass.config_entries.async_update_entry(entry, unique_id=unique_id)
+    _LOGGER.info("Apollo III config entry now identified by MAC %s", unique_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     api = ApolloAPI(
         async_get_clientsession(hass),
         entry.data["host"], entry.data["port"], entry.data["password"]
     )
     coordinators = {
-        "miner": ApolloCoordinator(hass, api, "miner", MINER_INTERVAL, miner_fetcher(api)),
-        "mcu": ApolloCoordinator(hass, api, "mcu", MCU_INTERVAL, api.get_mcu),
-        "settings": ApolloCoordinator(hass, api, "settings", SETTINGS_INTERVAL, api.get_settings),
-        "logs": ApolloCoordinator(hass, api, "logs", LOG_INTERVAL, log_fetcher(api)),
+        "miner": ApolloCoordinator(hass, entry, api, "miner", MINER_INTERVAL, miner_fetcher(api)),
+        "mcu": ApolloCoordinator(hass, entry, api, "mcu", MCU_INTERVAL, api.get_mcu),
+        "settings": ApolloCoordinator(hass, entry, api, "settings", SETTINGS_INTERVAL, api.get_settings),
+        "logs": ApolloCoordinator(hass, entry, api, "logs", LOG_INTERVAL, log_fetcher(api)),
     }
+    # A rejected password fails setup and starts reauth. An unreachable miner
+    # does not: entities are created and stay unavailable until it answers.
+    try:
+        await api.login()
+    except ApolloAuthError as err:
+        raise ConfigEntryAuthFailed(str(err)) from err
+    except ApolloAPIError:
+        pass
     # MCU/settings work even with the mining hardware offline.
     for coordinator in coordinators.values():
         await coordinator.async_refresh()
+    _migrate_unique_id(hass, entry, coordinators["mcu"].data)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"api": api, **coordinators}
     from .general_errors import GeneralErrorState
     hass.data[DOMAIN][entry.entry_id]["general_error_monitor"] = GeneralErrorState(
