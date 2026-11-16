@@ -1,6 +1,7 @@
 """Apollo III Home Assistant integration."""
 from datetime import datetime, timedelta
 import logging
+import re
 import time
 from homeassistant.util import dt as dt_util
 from homeassistant.config_entries import ConfigEntry
@@ -123,6 +124,15 @@ def _migrate_unique_id(hass, entry, mcu):
     _LOGGER.info("Apollo III config entry now identified by MAC %s", unique_id)
 
 
+def _sync_title(hass, entry):
+    """Keep the default "Apollo III (<host>)" title in step with the host after
+    Reconfigure or a DHCP address update. A title the user renamed is left alone."""
+    match = re.fullmatch(r"Apollo III \((.+)\)", entry.title or "")
+    wanted = f"Apollo III ({entry.data['host']})"
+    if match and entry.title != wanted:
+        hass.config_entries.async_update_entry(entry, title=wanted)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     api = ApolloAPI(
         async_get_clientsession(hass),
@@ -146,6 +156,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     for coordinator in coordinators.values():
         await coordinator.async_refresh()
     _migrate_unique_id(hass, entry, coordinators["mcu"].data)
+    _sync_title(hass, entry)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"api": api, **coordinators}
     from .general_errors import GeneralErrorState
     hass.data[DOMAIN][entry.entry_id]["general_error_monitor"] = GeneralErrorState(
