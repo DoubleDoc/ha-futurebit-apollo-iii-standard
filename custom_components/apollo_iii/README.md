@@ -38,3 +38,8 @@ does not contain the fault, or when mining telemetry confirms recovery.
 
 ### v0.3.9
 Generalized miner fault monitoring only. Retires ASIC-specific entities, miner failed sessions, and miner session-change sensor. Existing generalized incident counter and error history are preserved. The Mining enabled switch can intentionally stop the miner; an intentional stop is not by itself a logged error. Fault remains latched until positive hashrate confirms recovery.
+
+### v0.3.10
+- `Hashrate target setting` now shows the target the miner actually runs with. The Apollo backend uses `minerHashrate` only in custom mode; in preset modes it was showing the unused stored value (for example 14 TH/s while in Super ECO). It now reads `Super ECO preset`, `ECO preset` and so on, or `Custom N TH/s`. Attributes `miner_mode` and `custom_hashrate_ths` keep the raw values.
+- `Fan control setting` treats 0 as unset, matching the backend.
+- The number entity is renamed `Custom mode target hashrate` (entity ID unchanged), because it has no effect in preset modes.

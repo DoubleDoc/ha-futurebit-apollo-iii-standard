@@ -17,6 +17,32 @@ def at(data, *path):
             return None
     return data
 
+MODE_LABELS = {'super_eco': 'Super ECO', 'eco': 'ECO', 'balanced': 'Balanced', 'turbo': 'Turbo'}
+
+def is_set(value):
+    """Match apolloapi-v2's isSet(): only a positive number counts."""
+    try:
+        return value is not None and value != '' and float(value) > 0
+    except (TypeError, ValueError):
+        return False
+
+def hashrate_target(settings):
+    """Describe the hashrate target the miner actually runs with.
+
+    apolloapi-v2 (src/configurator.js) passes `-hashrate` only in custom mode
+    with a set minerHashrate; otherwise the preset power mode applies and the
+    stored minerHashrate is ignored. Custom without a hashrate falls back to eco.
+    """
+    mode = settings.get('minerMode')
+    hashrate = settings.get('minerHashrate')
+    if mode == 'custom':
+        if is_set(hashrate):
+            return f'Custom {int(float(hashrate))} TH/s'
+        return 'ECO preset'
+    if mode in MODE_LABELS:
+        return f'{MODE_LABELS[mode]} preset'
+    return None
+
 # Preserve existing unique IDs for measurements that were already in v0.1.
 # key, label, coordinator, path, scale, unit, device class, state class, diagnostic
 SPECS = [
@@ -81,14 +107,15 @@ class ApolloSensor(ApolloEntity, SensorEntity):
             data=stats[0]
         value=at(data,*self.path)
         if self._attr_unique_id.endswith('_target_hashrate_mode'):
-            return 'AUTO' if value is None else f'{value} TH/s'
+            return hashrate_target(data.get('settings') or {})
         if self._attr_unique_id.endswith('_fan_target_mode'):
             settings = data.get('settings') or {}
             pwm = settings.get('fanPwm')
             temp = settings.get('fanTemp')
-            if pwm is not None:
+            # The miner backend ignores 0/empty values, as here.
+            if is_set(pwm):
                 return f'Fixed PWM {pwm}%'
-            if temp is not None:
+            if is_set(temp):
                 return f'Temperature target {temp} °C'
             return 'AUTO'
         if self.path == ('services',):
@@ -96,6 +123,17 @@ class ApolloSensor(ApolloEntity, SensorEntity):
         if isinstance(value,(int,float)) and not isinstance(value,bool):
             return round(value*self.scale,4)
         return value
+
+    @property
+    def extra_state_attributes(self):
+        if not self._attr_unique_id.endswith('_target_hashrate_mode'):
+            return None
+        settings = (self.coordinator.data or {}).get('settings') or {}
+        return {
+            'miner_mode': settings.get('minerMode'),
+            # Used only when the mode is custom.
+            'custom_hashrate_ths': settings.get('minerHashrate'),
+        }
 
 class DiskPercent(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement=PERCENTAGE

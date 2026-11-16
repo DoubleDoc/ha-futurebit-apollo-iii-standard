@@ -6,7 +6,7 @@ from .entity import ApolloEntity
 from .api import ApolloAPIError
 
 FIELDS = [
-    ("minerHashrate", "Target hashrate", 5, 20, 1, "TH/s"),
+    ("minerHashrate", "Custom mode target hashrate", 5, 20, 1, "TH/s"),
     ("fanTemp", "Fan temperature target", 40, 80, 1, "°C"),
     ("fanPwm", "Fan PWM target", 10, 100, 1, "%"),
 ]
