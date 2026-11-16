@@ -87,5 +87,5 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 - The default entry title `Apollo III (<host>)` follows the host after Reconfigure or a discovery IP update; a renamed title is kept.
 
 ### v0.5.1
-- Named for the model it supports, the **Apollo III Standard** (miner only): integration, device ("FutureBit Apollo III Standard", model "Apollo III Standard"), setup forms, and the default entry title "Apollo III Standard (<host>)". Existing entity IDs and the `apollo_iii` domain are unchanged.
+- Named for the model it supports, the **Apollo III Standard** (miner only): integration name, device model ("Apollo III Standard"), setup forms, and the default entry title "Apollo III Standard (<host>)". The device name stays "FutureBit Apollo III" so entity names stay short. Existing entity IDs and the `apollo_iii` domain are unchanged.
 - GitHub repository renamed to `ha-futurebit-apollo-iii-standard`.

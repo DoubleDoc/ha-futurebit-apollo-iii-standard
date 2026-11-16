@@ -12,7 +12,8 @@ class ApolloEntity(CoordinatorEntity):
         self._attr_name = name
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="FutureBit Apollo III Standard",
+            # Device name stays short: it prefixes every entity name.
+            name="FutureBit Apollo III",
             manufacturer="FutureBit",
             model="Apollo III Standard",
             configuration_url=f"http://{entry.data['host']}/",
