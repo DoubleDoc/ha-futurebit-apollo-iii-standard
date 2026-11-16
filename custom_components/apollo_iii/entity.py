@@ -1,15 +1,18 @@
 """Shared Apollo III entity."""
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
+
 class ApolloEntity(CoordinatorEntity):
+    """Base entity. Names come from translations (entity.<platform>.<key>)."""
     _attr_has_entity_name = True
 
-    def __init__(self, entry, coordinator, key, name):
+    def __init__(self, entry, coordinator, key):
         super().__init__(coordinator)
+        # Unique IDs keep their original keys; translation keys must be lowercase.
         self._attr_unique_id = f"{entry.entry_id}_{key}"
-        self._attr_name = name
+        self._attr_translation_key = key.lower()
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             # Device name stays short: it prefixes every entity name.

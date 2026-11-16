@@ -5,8 +5,9 @@ from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCu
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import dt as dt_util
-from .const import DOMAIN
 from .entity import ApolloEntity, miner_stats, is_set
+from .general_errors import (MinerErrorCount, MinerLastError,
+                             MinerLastErrorTime, MinerLastErrorCategory)
 
 def at(data, *path):
     for key in path:
@@ -38,56 +39,57 @@ def hashrate_target(settings):
     return None
 
 # Preserve existing unique IDs for measurements that were already in v0.1.
-# key, label, coordinator, path, scale, unit, device class, state class, diagnostic
+# key, coordinator, path, scale, unit, device class, state class, diagnostic
+# (names are in translations/en.json under entity.sensor.<key>)
 SPECS = [
-    ('cpu_temp','Controller temperature','mcu',('temperature',),0.001,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
-    ('cpu_used','CPU usage','mcu',('cpu','usedPercent'),1,'%',None,SensorStateClass.MEASUREMENT,False),
-    ('cpu_threads','CPU threads','mcu',('cpu','threads'),1,None,None,None,True),
-    ('memory_used','Memory used','mcu',('memory','used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('memory_available','Memory available','mcu',('memory','available'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('memory_total','Memory total','mcu',('memory','total'),1/1024,'MiB',None,None,True),
-    ('service_status','Miner service status','settings',('services',),1,None,None,None,False),
-    ('board_watts','Hashboard power','miner',('master','boardsW'),1,'W',SensorDeviceClass.POWER,SensorStateClass.MEASUREMENT,False),
-    ('board_amps','Hashboard current','miner',('master','boardsI'),1,'A',SensorDeviceClass.CURRENT,SensorStateClass.MEASUREMENT,False),
-    ('hashrate_ths','Hashrate','miner',('slots','int_0','ghs'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
-    ('temperature_avg','Miner average temperature','miner',('temperature','avr'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
-    ('temperature_max','Miner maximum temperature','miner',('temperature','max'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,True),
-    ('hashboard_temp','Hashboard temperature','miner',('slots','int_0','temperature1'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
-    ('fan_speed','Miner fan speed','miner',('fans','int_0','rpm',0),1,'rpm',None,SensorStateClass.MEASUREMENT,False),
+    ('cpu_temp','mcu',('temperature',),0.001,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
+    ('cpu_used','mcu',('cpu','usedPercent'),1,'%',None,SensorStateClass.MEASUREMENT,False),
+    ('cpu_threads','mcu',('cpu','threads'),1,None,None,None,True),
+    ('memory_used','mcu',('memory','used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('memory_available','mcu',('memory','available'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('memory_total','mcu',('memory','total'),1/1024,'MiB',None,None,True),
+    ('service_status','settings',('services',),1,None,None,None,False),
+    ('board_watts','miner',('master','boardsW'),1,'W',SensorDeviceClass.POWER,SensorStateClass.MEASUREMENT,False),
+    ('board_amps','miner',('master','boardsI'),1,'A',SensorDeviceClass.CURRENT,SensorStateClass.MEASUREMENT,False),
+    ('hashrate_ths','miner',('slots','int_0','ghs'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
+    ('temperature_avg','miner',('temperature','avr'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
+    ('temperature_max','miner',('temperature','max'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,True),
+    ('hashboard_temp','miner',('slots','int_0','temperature1'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
+    ('fan_speed','miner',('fans','int_0','rpm',0),1,'rpm',None,SensorStateClass.MEASUREMENT,False),
     # The slot-level errorRate/errors fields are always 0 on the Apollo III;
     # chip errors are reported in the master interval stats.
-    ('hashboard_error_rate','Chip error rate (5 min)','miner',('master','intervals','int_300','errorRate'),1,'%',None,SensorStateClass.MEASUREMENT,False),
-    ('efficiency_j_th','Mining efficiency','miner',('slots','int_0','wattPerGHs'),1000,'J/TH',None,SensorStateClass.MEASUREMENT,False),
-    ('pool_accepted','Pool accepted shares','miner',('pool','intervals','int_0','sharesAccepted'),1,None,None,None,False),
-    ('pool_rejected','Pool rejected shares','miner',('pool','intervals','int_0','sharesRejected'),1,None,None,None,False),
-    ('pool_sent','Pool sent shares','miner',('pool','intervals','int_0','sharesSent'),1,None,None,None,True),
-    ('solutions','Miner solutions','miner',('slots','int_0','solutions'),1,None,None,None,True),
-    ('hardware_errors','Chip errors since miner start','miner',('master','intervals','int_0','errors'),1,None,None,SensorStateClass.TOTAL_INCREASING,True),
-    ('chip_speed_ghs','Chip speed','miner',('master','intervals','int_30','chipSpeed'),1,'GH/s',None,SensorStateClass.MEASUREMENT,False),
+    ('hashboard_error_rate','miner',('master','intervals','int_300','errorRate'),1,'%',None,SensorStateClass.MEASUREMENT,False),
+    ('efficiency_j_th','miner',('slots','int_0','wattPerGHs'),1000,'J/TH',None,SensorStateClass.MEASUREMENT,False),
+    ('pool_accepted','miner',('pool','intervals','int_0','sharesAccepted'),1,None,None,None,False),
+    ('pool_rejected','miner',('pool','intervals','int_0','sharesRejected'),1,None,None,None,False),
+    ('pool_sent','miner',('pool','intervals','int_0','sharesSent'),1,None,None,None,True),
+    ('solutions','miner',('slots','int_0','solutions'),1,None,None,None,True),
+    ('hardware_errors','miner',('master','intervals','int_0','errors'),1,None,None,SensorStateClass.TOTAL_INCREASING,True),
+    ('chip_speed_ghs','miner',('master','intervals','int_30','chipSpeed'),1,'GH/s',None,SensorStateClass.MEASUREMENT,False),
     # Raw `osc` value: FutureBit doesn't document its unit, so none is claimed.
-    ('chip_freq_osc','Chip frequency (osc)','miner',('master','osc'),1,None,None,SensorStateClass.MEASUREMENT,False),
-    ('hashrate_1h_ths','Hashrate (1 h average)','miner',('master','intervals','int_3600','bySol'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
-    ('spi_errors','Master SPI errors','miner',('master','errorSpi'),1,None,None,None,True),
-    ('active_boards','Active hashboards','miner',('master','boards'),1,None,None,None,True),
-    ('miner_uptime','Miner uptime','miner',('master','upTime'),1,'s',None,SensorStateClass.MEASUREMENT,True),
-    ('pool_host','Pool host','miner',('pool','host'),1,None,None,None,True),
-    ('root_disk_used','Root disk used','mcu',('disks',0,'used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('root_disk_total','Root disk total','mcu',('disks',0,'total'),1/1024,'MiB',None,None,True),
-    ('log_disk_used','Log disk used','mcu',('disks',1,'used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('log_disk_total','Log disk total','mcu',('disks',1,'total'),1/1024,'MiB',None,None,True),
-    ('controller_uptime_raw','Controller boot time','mcu',('uptime',),1,None,None,None,True),
-    ('operating_system','Operating system','mcu',('operatingSystem',),1,None,None,None,True),
-    ('load_average','Linux load average','mcu',('loadAverage',),1,None,None,None,True),
-    ('memory_cache','Memory cache','mcu',('memory','cache'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('memory_swap','Memory swap','mcu',('memory','swap'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
-    ('target_hashrate_mode','Hashrate target setting','settings',('settings','minerHashrate'),1,None,None,None,False),
-    ('fan_target_mode','Fan control setting','settings',('settings','fanPwm'),1,None,None,None,False),
+    ('chip_freq_osc','miner',('master','osc'),1,None,None,SensorStateClass.MEASUREMENT,False),
+    ('hashrate_1h_ths','miner',('master','intervals','int_3600','bySol'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
+    ('spi_errors','miner',('master','errorSpi'),1,None,None,None,True),
+    ('active_boards','miner',('master','boards'),1,None,None,None,True),
+    ('miner_uptime','miner',('master','upTime'),1,'s',None,SensorStateClass.MEASUREMENT,True),
+    ('pool_host','miner',('pool','host'),1,None,None,None,True),
+    ('root_disk_used','mcu',('disks',0,'used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('root_disk_total','mcu',('disks',0,'total'),1/1024,'MiB',None,None,True),
+    ('log_disk_used','mcu',('disks',1,'used'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('log_disk_total','mcu',('disks',1,'total'),1/1024,'MiB',None,None,True),
+    ('controller_uptime_raw','mcu',('uptime',),1,None,None,None,True),
+    ('operating_system','mcu',('operatingSystem',),1,None,None,None,True),
+    ('load_average','mcu',('loadAverage',),1,None,None,None,True),
+    ('memory_cache','mcu',('memory','cache'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('memory_swap','mcu',('memory','swap'),1/1024,'MiB',None,SensorStateClass.MEASUREMENT,True),
+    ('target_hashrate_mode','settings',('settings','minerHashrate'),1,None,None,None,False),
+    ('fan_target_mode','settings',('settings','fanPwm'),1,None,None,None,False),
 ]
 
 class ApolloSensor(ApolloEntity, SensorEntity):
     def __init__(self, entry, coordinator, spec):
-        key,name,group,path,scale,unit,device_class,state_class,diagnostic = spec
-        super().__init__(entry,coordinator,key,name)
+        key,group,path,scale,unit,device_class,state_class,diagnostic = spec
+        super().__init__(entry,coordinator,key)
         self.source,self.path,self.scale = group,path,scale
         self._attr_native_unit_of_measurement=unit
         self._attr_device_class=device_class
@@ -148,10 +150,9 @@ class Efficiency1h(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement='J/TH'
     _attr_state_class=SensorStateClass.MEASUREMENT
     _attr_suggested_display_precision=2
-    _attr_icon='mdi:lightning-bolt-outline'
 
     def __init__(self,entry,coordinator):
-        super().__init__(entry,coordinator,'efficiency_1h_j_th','Mining efficiency (1 h average)')
+        super().__init__(entry,coordinator,'efficiency_1h_j_th')
 
     @property
     def available(self):
@@ -170,8 +171,8 @@ class Efficiency1h(ApolloEntity, SensorEntity):
 
 class DvfsSensor(ApolloEntity, SensorEntity):
     """Values the miner's DVFS tuner prints to its log every few seconds."""
-    def __init__(self,entry,coordinator,key,name,field,unit=None,device_class=None,state_class=None,diagnostic=False,precision=None):
-        super().__init__(entry,coordinator,key,name)
+    def __init__(self,entry,coordinator,key,field,unit=None,device_class=None,state_class=None,diagnostic=False,precision=None):
+        super().__init__(entry,coordinator,key)
         self.field=field
         self._attr_native_unit_of_measurement=unit
         self._attr_device_class=device_class
@@ -195,10 +196,10 @@ class DvfsSensor(ApolloEntity, SensorEntity):
         return self._dvfs.get(self.field)
 
 DVFS_SPECS = (
-    ('dvfs_target_ths','Hashrate target','target_ths','TH/s',None,SensorStateClass.MEASUREMENT,False),
+    ('dvfs_target_ths','target_ths','TH/s',None,SensorStateClass.MEASUREMENT,False),
     # The miner logs the voltage to 3 decimals; HA's voltage default rounds it to whole volts.
-    ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,False,3),
-    ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,False),
+    ('dvfs_board_voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,False,3),
+    ('dvfs_fan_pwm','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,False),
 )
 
 class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
@@ -212,13 +213,12 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
     the watch start and last change are restored across HA restarts).
     """
     _attr_device_class=SensorDeviceClass.ENUM
-    _attr_options=['Adjusting','Holding']
+    _attr_options=['adjusting','holding']
     _attr_entity_category=EntityCategory.DIAGNOSTIC
-    _attr_icon='mdi:tune-variant'
     TUNING_WINDOW=timedelta(minutes=10)
 
     def __init__(self,entry,logs,miner):
-        super().__init__(entry,logs,'dvfs_tune','Tuning state')
+        super().__init__(entry,logs,'dvfs_tune')
         self.miner=miner
         self._last={}
         self._last_change=None
@@ -268,10 +268,10 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
     def native_value(self):
         now=dt_util.utcnow()
         if self._last_change and now-self._last_change < self.TUNING_WINDOW:
-            return 'Adjusting'
+            return 'adjusting'
         if self._watch_since and (now-self._watch_since >= self.TUNING_WINDOW
                                   or self._last_change is not None):
-            return 'Holding'
+            return 'holding'
         return None
 
     @property
@@ -288,8 +288,8 @@ class DiskPercent(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement=PERCENTAGE
     _attr_state_class=SensorStateClass.MEASUREMENT
     _attr_entity_category=EntityCategory.DIAGNOSTIC
-    def __init__(self,entry,coordinator,index,label):
-        super().__init__(entry,coordinator,f'disk_{index}_percent',f'{label} disk utilization')
+    def __init__(self,entry,coordinator,index):
+        super().__init__(entry,coordinator,f'disk_{index}_percent')
         self.index=index
     @property
     def native_value(self):
@@ -304,9 +304,8 @@ class MiningEnergy(ApolloEntity, SensorEntity, RestoreEntity):
     _attr_native_unit_of_measurement='kWh'
     _attr_device_class=SensorDeviceClass.ENERGY
     _attr_state_class=SensorStateClass.TOTAL_INCREASING
-    _attr_icon='mdi:lightning-bolt'
     def __init__(self,entry,coordinator):
-        super().__init__(entry,coordinator,'hashboard_energy','Hashboard energy estimated')
+        super().__init__(entry,coordinator,'hashboard_energy')
         self._energy=0.0
         self._last_time=None
         self._last_power=None
@@ -353,17 +352,14 @@ class MiningEnergy(ApolloEntity, SensorEntity, RestoreEntity):
                 'gap_handling':'Intervals over 60 seconds or with stale miner stats are excluded'}
 
 async def async_setup_entry(hass,entry,async_add_entities):
-    data=hass.data[DOMAIN][entry.entry_id]
-    entities=[ApolloSensor(entry,data[spec[2]],spec) for spec in SPECS]
-    entities.extend(DiskPercent(entry,data['mcu'],i,label) for i,label in ((0,'Root'),(1,'Log')))
-    entities.append(MiningEnergy(entry,data['miner']))
-    entities.append(Efficiency1h(entry,data['miner']))
-    entities.extend(DvfsSensor(entry,data['logs'],*spec) for spec in DVFS_SPECS)
-    entities.append(TuningActivity(entry,data['logs'],data['miner']))
-    from .general_errors import (MinerErrorCount, MinerLastError,
-                                 MinerLastErrorTime, MinerLastErrorCategory)
-    general = data["general_error_monitor"]
-    entities.extend((MinerErrorCount(entry, general),
-                     MinerLastError(entry, general), MinerLastErrorTime(entry, general),
-                     MinerLastErrorCategory(entry, general)))
+    data=entry.runtime_data
+    entities=[ApolloSensor(entry,getattr(data,spec[1]),spec) for spec in SPECS]
+    entities.extend(DiskPercent(entry,data.mcu,i) for i in (0,1))
+    entities.append(MiningEnergy(entry,data.miner))
+    entities.append(Efficiency1h(entry,data.miner))
+    entities.extend(DvfsSensor(entry,data.logs,*spec) for spec in DVFS_SPECS)
+    entities.append(TuningActivity(entry,data.logs,data.miner))
+    entities.extend((MinerErrorCount(entry, data.monitor),
+                     MinerLastError(entry, data.monitor), MinerLastErrorTime(entry, data.monitor),
+                     MinerLastErrorCategory(entry, data.monitor)))
     async_add_entities(entities)

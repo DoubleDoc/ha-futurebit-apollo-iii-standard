@@ -4,7 +4,7 @@ A Home Assistant custom integration for the **FutureBit Apollo III Standard**, t
 
 Unofficial and not affiliated with FutureBit.
 
-> **Status:** in active development. Tested on one Apollo III Standard running Apollo WebOS 2 (apolloapi-v2) with Home Assistant 2026.10.
+> Tested on an Apollo III Standard running Apollo WebOS 2 (apolloapi-v2) with Home Assistant 2026.10.
 
 ## Features
 
@@ -104,6 +104,7 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 - **"Could not reach the Apollo API":** check the host and port, that the miner is on, and that Home Assistant can reach it (firewalls, VLANs).
 - **"The miner rejected the password":** use the password you log in to the Apollo web dashboard with.
 - **Entities unavailable:** the miner's stats have not updated for a minute, or Home Assistant cannot reach it. `Miner online` has `stats_stale` and `service_status` attributes to tell which.
+- **Reporting a problem:** open an issue and attach the diagnostics file (device page > three dots > **Download diagnostics**). Passwords, MAC and IP addresses and the pool username are removed from it.
 - **Debug logs:** add this to `configuration.yaml` and restart:
   ```yaml
   logger:
@@ -115,3 +116,4 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 
 - [CHANGELOG.md](CHANGELOG.md): version history.
 - [DEVELOPMENT.md](DEVELOPMENT.md): how the integration works, and how to develop and test it.
+- License: [MIT](LICENSE).

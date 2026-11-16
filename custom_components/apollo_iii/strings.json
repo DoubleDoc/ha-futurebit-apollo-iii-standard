@@ -61,5 +61,224 @@
       "reconfigure_successful": "Apollo III Standard settings updated.",
       "wrong_device": "That address belongs to a different Apollo III Standard than this entry."
     }
+  },
+  "entity": {
+    "sensor": {
+      "active_boards": {
+        "name": "Active hashboards"
+      },
+      "board_amps": {
+        "name": "Hashboard current"
+      },
+      "board_watts": {
+        "name": "Hashboard power"
+      },
+      "chip_freq_osc": {
+        "name": "Chip frequency (osc)"
+      },
+      "chip_speed_ghs": {
+        "name": "Chip speed"
+      },
+      "controller_uptime_raw": {
+        "name": "Controller boot time"
+      },
+      "cpu_temp": {
+        "name": "Controller temperature"
+      },
+      "cpu_threads": {
+        "name": "CPU threads"
+      },
+      "cpu_used": {
+        "name": "CPU usage"
+      },
+      "disk_0_percent": {
+        "name": "Root disk utilization"
+      },
+      "disk_1_percent": {
+        "name": "Log disk utilization"
+      },
+      "dvfs_board_voltage": {
+        "name": "Board voltage"
+      },
+      "dvfs_fan_pwm": {
+        "name": "Fan PWM"
+      },
+      "dvfs_target_ths": {
+        "name": "Hashrate target"
+      },
+      "dvfs_tune": {
+        "name": "Tuning state",
+        "state": {
+          "adjusting": "Adjusting",
+          "holding": "Holding"
+        }
+      },
+      "efficiency_1h_j_th": {
+        "name": "Mining efficiency (1 h average)"
+      },
+      "efficiency_j_th": {
+        "name": "Mining efficiency"
+      },
+      "fan_speed": {
+        "name": "Miner fan speed"
+      },
+      "fan_target_mode": {
+        "name": "Fan control setting"
+      },
+      "hardware_errors": {
+        "name": "Chip errors since miner start"
+      },
+      "hashboard_energy": {
+        "name": "Hashboard energy estimated"
+      },
+      "hashboard_error_rate": {
+        "name": "Chip error rate (5 min)"
+      },
+      "hashboard_temp": {
+        "name": "Hashboard temperature"
+      },
+      "hashrate_1h_ths": {
+        "name": "Hashrate (1 h average)"
+      },
+      "hashrate_ths": {
+        "name": "Hashrate"
+      },
+      "load_average": {
+        "name": "Linux load average"
+      },
+      "log_disk_total": {
+        "name": "Log disk total"
+      },
+      "log_disk_used": {
+        "name": "Log disk used"
+      },
+      "memory_available": {
+        "name": "Memory available"
+      },
+      "memory_cache": {
+        "name": "Memory cache"
+      },
+      "memory_swap": {
+        "name": "Memory swap"
+      },
+      "memory_total": {
+        "name": "Memory total"
+      },
+      "memory_used": {
+        "name": "Memory used"
+      },
+      "miner_error_incidents": {
+        "name": "Miner error count"
+      },
+      "miner_last_error": {
+        "name": "Miner last error"
+      },
+      "miner_last_error_category": {
+        "name": "Miner last error category"
+      },
+      "miner_last_error_time": {
+        "name": "Miner last error time"
+      },
+      "miner_uptime": {
+        "name": "Miner uptime"
+      },
+      "operating_system": {
+        "name": "Operating system"
+      },
+      "pool_accepted": {
+        "name": "Pool accepted shares"
+      },
+      "pool_host": {
+        "name": "Pool host"
+      },
+      "pool_rejected": {
+        "name": "Pool rejected shares"
+      },
+      "pool_sent": {
+        "name": "Pool sent shares"
+      },
+      "root_disk_total": {
+        "name": "Root disk total"
+      },
+      "root_disk_used": {
+        "name": "Root disk used"
+      },
+      "service_status": {
+        "name": "Miner service status"
+      },
+      "solutions": {
+        "name": "Miner solutions"
+      },
+      "spi_errors": {
+        "name": "Master SPI errors"
+      },
+      "target_hashrate_mode": {
+        "name": "Hashrate target setting"
+      },
+      "temperature_avg": {
+        "name": "Miner average temperature"
+      },
+      "temperature_max": {
+        "name": "Miner maximum temperature"
+      }
+    },
+    "binary_sensor": {
+      "miner_fault": {
+        "name": "Miner fault"
+      },
+      "online": {
+        "name": "Miner online"
+      },
+      "restart_needed": {
+        "name": "Restart needed"
+      }
+    },
+    "button": {
+      "button_restart": {
+        "name": "Restart miner"
+      },
+      "button_start": {
+        "name": "Start miner"
+      },
+      "button_stop": {
+        "name": "Stop miner"
+      }
+    },
+    "number": {
+      "set_fanpwm": {
+        "name": "Fan PWM target"
+      },
+      "set_fantemp": {
+        "name": "Fan temperature target"
+      },
+      "set_minerhashrate": {
+        "name": "Custom mode target hashrate"
+      }
+    },
+    "select": {
+      "fan_mode_select": {
+        "name": "Fan mode",
+        "state": {
+          "auto": "Automatic",
+          "temperature": "Temperature target",
+          "fixed_pwm": "Fixed PWM"
+        }
+      },
+      "mode_select": {
+        "name": "Performance mode",
+        "state": {
+          "super_eco": "Super ECO",
+          "eco": "ECO",
+          "balanced": "Balanced",
+          "turbo": "Turbo",
+          "custom": "Custom"
+        }
+      }
+    },
+    "switch": {
+      "mining_switch": {
+        "name": "Mining enabled"
+      }
+    }
   }
 }

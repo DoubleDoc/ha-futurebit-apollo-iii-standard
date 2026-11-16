@@ -149,10 +149,9 @@ class RestartTracker:
 
 
 class RestartNeeded(ApolloEntity, BinarySensorEntity, RestoreEntity):
-    _attr_icon = "mdi:restart-alert"
 
     def __init__(self, entry, tracker):
-        super().__init__(entry, tracker.settings, "restart_needed", "Restart needed")
+        super().__init__(entry, tracker.settings, "restart_needed")
         self.tracker = tracker
         tracker.entity = self
 

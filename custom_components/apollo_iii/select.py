@@ -5,7 +5,7 @@ These only save settings. The miner loads them at its next start; the
 """
 from homeassistant.components.select import SelectEntity
 from homeassistant.exceptions import HomeAssistantError
-from .const import DOMAIN, MODES
+from .const import MODES
 from .entity import ApolloEntity, is_set
 from .api import ApolloAPIError
 
@@ -13,7 +13,7 @@ class ModeSelect(ApolloEntity, SelectEntity):
     _attr_options = MODES
 
     def __init__(self, entry, coordinator, api):
-        super().__init__(entry, coordinator, "mode_select", "Performance mode")
+        super().__init__(entry, coordinator, "mode_select")
         self.api = api
 
     @property
@@ -25,12 +25,12 @@ class ModeSelect(ApolloEntity, SelectEntity):
             raise HomeAssistantError("Invalid mode")
         try:
             await self.api.update_settings({"minerMode": option})
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_refresh()  # not debounced: show the change now
         except ApolloAPIError as err:
             raise HomeAssistantError(str(err)) from err
         # Deliberately does not restart or start a stopped miner; see Restart needed.
 
-FAN_AUTO, FAN_TEMP, FAN_PWM = "Automatic", "Temperature target", "Fixed PWM"
+FAN_AUTO, FAN_TEMP, FAN_PWM = "auto", "temperature", "fixed_pwm"
 # Values the Apollo UI uses when a fan mode is first switched on.
 DEFAULT_FAN_TEMP, DEFAULT_FAN_PWM = 50, 50
 
@@ -42,10 +42,9 @@ class FanModeSelect(ApolloEntity, SelectEntity):
     temperature target (configurator.js), which a number entity cannot show.
     """
     _attr_options = [FAN_AUTO, FAN_TEMP, FAN_PWM]
-    _attr_icon = "mdi:fan"
 
     def __init__(self, entry, coordinator, api):
-        super().__init__(entry, coordinator, "fan_mode_select", "Fan mode")
+        super().__init__(entry, coordinator, "fan_mode_select")
         self.api = api
 
     @property
@@ -78,12 +77,12 @@ class FanModeSelect(ApolloEntity, SelectEntity):
             raise HomeAssistantError("Invalid fan mode")
         try:
             await self.api.update_settings(changes)
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_refresh()  # not debounced: show the change now
         except ApolloAPIError as err:
             raise HomeAssistantError(str(err)) from err
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    d=hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([ModeSelect(entry, d["settings"], d["api"]),
-                        FanModeSelect(entry, d["settings"], d["api"])])
+    d=entry.runtime_data
+    async_add_entities([ModeSelect(entry, d.settings, d.api),
+                        FanModeSelect(entry, d.settings, d.api)])

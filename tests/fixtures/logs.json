@@ -1,0 +1,11 @@
+{
+ "Logs": {
+  "read": {
+   "result": {
+    "content": "=== Session 1478.miner ===\n2026-11-15 23:24:17: DVFS: fan 1 PWM 13% speed 1460 RPM\n2026-11-15 23:24:17: DVFS: hitrate 0.992, boardspeeds [8005], total 8.00\n2026-11-15 23:24:20: DVFS: state NORMAL, tune TUNE_STEPPING_UP, target 8.00 TH/s\n, voltage 5.195V\n2026-11-15 23:24:20: DVFS: avg_temp 54.47, max_temp 56.40 (1/1), power 86.0\n2026-11-15 23:24:20: DVFS: avg_volt 1:0.2405 2:0.0000 3:0.0000 min 1:0.2313 2:0.\n0000 3:0.0000 max 1:0.2453 2:0.0000 3:0.0000\n2026-11-15 23:24:20: DVFS: board_temp 53.2C\n2026-11-15 23:24:20: DVFS: fan 1 PWM 13% speed 1500 RPM\n2026-11-15 23:24:20: DVFS: hitrate 0.996, boardspeeds [8036], total 8.04\n2026-11-15 23:24:23: DVFS: state NORMAL, tune TUNE_STEPPING_UP, target 8.00 TH/s\n, voltage 5.195V\n2026-11-15 23:24:23: DVFS: avg_temp 54.47, max_temp 56.40 (1/1), power 91.6\n2026-11-15 23:24:23: DVFS: avg_volt 1:0.2405 2:0.0000 3:0.0000 min 1:0.2313 2:0.\n0000 3:0.0000 max 1:0.2452 2:0.0000 3:0.0000\n2026-11-15 23:24:23: DVFS: board_temp 53.4C\n2026-11-15 23:24:23: DVFS: fan 1 PWM 13% speed 1540 RPM\n2026-11-15 23:24:23: DVFS: hitrate 0.994, boardspeeds [8020], total 8.02\n2026-11-15 23:24:25: Submit: ID 45551 seID -1 Job ID 9ac2, HW ID 1, Nonce2 00000\n00000000001, NTime 6afa854d, NTimeDiff 1, Nonce 2aace564, VersionBits 09b0e000,\nExtraNonce1: 425876a0, DiffTarget 16384, DiffSubmit 16384\n2026-11-15 23:24:25: Submit Result: true, Resp: { 45551 true <nil>  []}, Job ID\n9ac2, HW ID 1\n\n",
+    "timestamp": "2026-11-16T04:24:25.796Z"
+   },
+   "error": null
+  }
+ }
+}

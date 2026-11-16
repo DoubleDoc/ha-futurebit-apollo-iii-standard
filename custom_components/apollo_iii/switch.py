@@ -1,13 +1,12 @@
 """Apollo III requested mining state."""
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.exceptions import HomeAssistantError
-from .const import DOMAIN
 from .entity import ApolloEntity
 from .api import ApolloAPIError
 
 class MiningSwitch(ApolloEntity, SwitchEntity):
     def __init__(self, entry, coordinator, api):
-        super().__init__(entry, coordinator, "mining_switch", "Mining enabled")
+        super().__init__(entry, coordinator, "mining_switch")
         self.api = api
 
     @property
@@ -22,7 +21,7 @@ class MiningSwitch(ApolloEntity, SwitchEntity):
     async def _command(self, action):
         try:
             await self.api.miner_command(action)
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_refresh()  # not debounced: show the change now
         except ApolloAPIError as err:
             raise HomeAssistantError(str(err)) from err
 
@@ -33,5 +32,5 @@ class MiningSwitch(ApolloEntity, SwitchEntity):
         await self._command("stop")
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    d=hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([MiningSwitch(entry,d["settings"],d["api"])])
+    d=entry.runtime_data
+    async_add_entities([MiningSwitch(entry,d.settings,d.api)])

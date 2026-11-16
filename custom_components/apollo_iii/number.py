@@ -6,20 +6,19 @@ overrides the temperature target; use the Fan mode select to go back.
 """
 from homeassistant.components.number import NumberEntity
 from homeassistant.exceptions import HomeAssistantError
-from .const import DOMAIN
 from .entity import ApolloEntity
 from .api import ApolloAPIError
 
 FIELDS = [
-    ("minerHashrate", "Custom mode target hashrate", 5, 20, 1, "TH/s"),
-    ("fanTemp", "Fan temperature target", 40, 80, 1, "°C"),
-    ("fanPwm", "Fan PWM target", 10, 100, 1, "%"),
+    ("minerHashrate", 5, 20, 1, "TH/s"),
+    ("fanTemp", 40, 80, 1, "°C"),
+    ("fanPwm", 10, 100, 1, "%"),
 ]
 
 class SettingNumber(ApolloEntity, NumberEntity):
     def __init__(self, entry, coordinator, api, spec):
-        field, name, minimum, maximum, step, unit = spec
-        super().__init__(entry, coordinator, "set_"+field, name)
+        field, minimum, maximum, step, unit = spec
+        super().__init__(entry, coordinator, "set_"+field)
         self.field, self.api = field, api
         self._attr_native_min_value = minimum
         self._attr_native_max_value = maximum
@@ -33,10 +32,10 @@ class SettingNumber(ApolloEntity, NumberEntity):
     async def async_set_native_value(self, value):
         try:
             await self.api.update_settings({self.field: int(value)})
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_refresh()  # not debounced: show the change now
         except ApolloAPIError as err:
             raise HomeAssistantError(str(err)) from err
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    d=hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([SettingNumber(entry,d["settings"],d["api"],s) for s in FIELDS])
+    d=entry.runtime_data
+    async_add_entities([SettingNumber(entry,d.settings,d.api,s) for s in FIELDS])

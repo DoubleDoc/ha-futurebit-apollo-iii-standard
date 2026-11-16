@@ -1,0 +1,55 @@
+{
+ "Mcu": {
+  "stats": {
+   "result": {
+    "stats": {
+     "timestamp": "2026-11-16T04:24:25.646Z",
+     "hostname": "futurebit-apollo-3",
+     "operatingSystem": "Ubuntu 26.04 resolute",
+     "uptime": "2026-11-05 18:12:46",
+     "loadAverage": "3.06 1.60 0.81 1/489 1554281",
+     "architecture": "aarch64",
+     "temperature": 44691,
+     "minerTemperature": 0,
+     "minerFanSpeed": 0,
+     "memory": {
+      "total": 7961632,
+      "available": 7382036,
+      "used": 1516268,
+      "cache": 936672,
+      "swap": 0
+     },
+     "cpu": {
+      "threads": 8,
+      "usedPercent": 3
+     },
+     "disks": [
+      {
+       "total": 15050656,
+       "used": 11677996,
+       "mountPoint": "/"
+      },
+      {
+       "total": 47960,
+       "used": 10724,
+       "mountPoint": "/var/log"
+      }
+     ],
+     "network": [
+      {
+       "name": "eth0",
+       "address": "192.0.2.50",
+       "mac": "aa:bb:cc:dd:ee:01"
+      },
+      {
+       "name": "wlan0",
+       "address": "",
+       "mac": ""
+      }
+     ]
+    }
+   },
+   "error": null
+  }
+ }
+}

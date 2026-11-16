@@ -7,7 +7,10 @@ Notes for working on the integration. For using it, see [README.md](README.md).
 | Path | Purpose |
 |---|---|
 | `custom_components/apollo_iii/` | The integration (domain `apollo_iii`). This folder is what users install. |
-| `custom_components/apollo_iii/translations/en.json` | UI strings. Custom integrations load these, not `strings.json`; keep the two identical. |
+| `custom_components/apollo_iii/translations/en.json` | UI strings and entity names. Custom integrations load these, not `strings.json`; keep the two identical. |
+| `custom_components/apollo_iii/icons.json` | Entity icons, by translation key. |
+| `tests/` | pytest suite; `tests/fixtures/` holds sanitized responses captured from a real miner. |
+| `.github/workflows/` | CI: hassfest and HACS validation, and the test suite. |
 | `custom_components/apollo_iii/brand/` | Local brand images (Home Assistant 2026.3+). |
 | `hacs.json` | HACS metadata. |
 | `deploy.sh` | Copies the integration into a local Home Assistant config for testing. |
@@ -39,14 +42,15 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 ### Modules
 | File | Role |
 |---|---|
-| `__init__.py` | Setup, coordinators, staleness tracking, unique-ID migration, title sync. |
+| `__init__.py` | Setup, unique-ID migration, title sync. |
+| `coordinator.py` | Coordinators, stats/log staleness, `ApolloData` (`entry.runtime_data`). |
 | `api.py` | GraphQL client and queries. |
+| `diagnostics.py` | Diagnostics download, with credentials, MACs, addresses and the pool user redacted. |
 | `config_flow.py` | User, DHCP, reconfigure and reauth steps. |
 | `logparse.py` | Screen-snapshot parsing and DVFS values. |
 | `general_errors.py` | Fault monitor: stats conditions, events, log matching, incident counter. |
 | `restart_needed.py` | Tracks the settings the running miner loaded. |
 | `sensor.py`, `binary_sensor.py`, `select.py`, `number.py`, `switch.py`, `button.py` | Entity platforms. |
-| `registry_cleanup.py` | Removes entities retired in early versions. |
 
 ## Local development
 
@@ -64,14 +68,25 @@ HA_CONFIG=/path/to/config BACKUP_DIR=/path/to/backups ./deploy.sh
 
 Then check the configuration and restart Home Assistant (`ha core check` and `ha core restart` on Home Assistant OS).
 
+### Entity names and translations
+Entities have no hardcoded names: each sets a translation key (its unique-ID key, lowercased) and the name lives in `translations/en.json` under `entity.<platform>.<key>.name`. Select options and the tuning state are translated state keys. Add new entities to both translation files and, if they need an icon, to `icons.json`.
+
 ## Testing
 
-There is no automated test suite yet. Changes so far were checked by:
-- running the API client and coordinator fetchers against a live miner, with Home Assistant modules stubbed;
-- simulating fault, restart-needed and tuning scenarios against the same code;
-- checking the live entities and the config flow (through Home Assistant's REST flow API) after deploying.
+The suite uses [pytest-homeassistant-custom-component](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component), pinned in `requirements_test.txt` to the Home Assistant version it targets.
+
+```sh
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements_test.txt
+pytest
+```
+
+`tests/conftest.py` provides `FakeMiner`, which answers the integration's GraphQL queries from `tests/fixtures/` and records settings updates and miner commands. Use it to simulate a wrong password (`fake_miner.password`), an unreachable miner (`fake_miner.unreachable`), or changed stats. To refresh the fixtures from a real miner, capture the four queries and replace every MAC, IP address and pool username before committing.
+
+CI runs the tests, hassfest and the HACS validator on every push.
 
 ## Releasing
 
 1. Update `version` in `custom_components/apollo_iii/manifest.json` and add an entry to `CHANGELOG.md`.
-2. Commit, then tag and publish a GitHub release named `vX.Y.Z`. HACS installs from releases.
+2. Make sure CI is green.
+3. Tag and publish a GitHub release named `vX.Y.Z` with the changelog entry as notes. HACS installs from releases.

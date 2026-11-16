@@ -2,6 +2,16 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.0
+First stable release.
+- **Diagnostics download** (device page > Download diagnostics), with the password, MACs, IP addresses and pool username redacted.
+- Entity names, select options and the tuning state come from translations; icons from `icons.json`. Visible names are unchanged.
+- Controls refresh the miner state immediately after a change, instead of up to 10 seconds later.
+- Zero hashrate no longer also counts as "low hashrate".
+- Code follows current Home Assistant conventions (`runtime_data`, separate coordinator module); legacy entity cleanup from pre-0.4 versions removed.
+- Automated tests (45, 92 % coverage), and CI for tests, hassfest and HACS validation.
+- MIT license.
+
 ## 0.5.1
 - Named for the model it supports, the **Apollo III Standard** (miner only): integration name, device model, setup forms, and the default entry title "Apollo III Standard (<host>)". The device name stays "FutureBit Apollo III" so entity names stay short. Entity IDs and the `apollo_iii` domain are unchanged.
 - GitHub repository renamed to `ha-futurebit-apollo-iii-standard`.

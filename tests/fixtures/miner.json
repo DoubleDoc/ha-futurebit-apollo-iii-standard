@@ -1,0 +1,121 @@
+{
+ "Miner": {
+  "online": {
+   "result": {
+    "online": {
+     "timestamp": "2026-11-16T04:24:25.658Z",
+     "status": "online"
+    }
+   },
+   "error": null
+  },
+  "stats": {
+   "result": {
+    "stats": [
+     {
+      "uuid": "3",
+      "version": "v3",
+      "date": "2026-11-15T23:24:18-05:00",
+      "comport": null,
+      "statVersion": "1.3",
+      "master": {
+       "upTime": 3048019,
+       "diff": 16384,
+       "boards": 1,
+       "errorSpi": 0,
+       "osc": 409,
+       "hwAddr": "aa:bb:cc:dd:ee:02",
+       "boardsI": 16.6,
+       "boardsW": 87.4,
+       "wattPerGHs": 0.011,
+       "intervals": {
+        "int_0": {
+         "name": "total",
+         "interval": 3048019,
+         "bySol": 2320.6,
+         "byDiff": 2312,
+         "byPool": 2310.7,
+         "byJobs": 2339.1,
+         "solutions": 1646888419,
+         "errors": 13102851,
+         "errorRate": 0.8,
+         "chipSpeed": 110.51,
+         "chipRestarts": 0
+        },
+        "int_30": {
+         "bySol": 8033.7,
+         "errorRate": 0.8,
+         "chipSpeed": 382.56
+        },
+        "int_300": {
+         "bySol": 8002.9,
+         "errorRate": 0.8
+        },
+        "int_3600": {
+         "bySol": 8008.4,
+         "byPool": 7740.6,
+         "errorRate": 0.8,
+         "chipSpeed": 381.35
+        }
+       }
+      },
+      "temperature": {
+       "count": 21,
+       "min": 53,
+       "avr": 54,
+       "max": 57
+      },
+      "fans": {
+       "int_0": {
+        "rpm": [
+         1460
+        ]
+       }
+      },
+      "pool": {
+       "host": "192.0.2.10",
+       "port": 2018,
+       "userName": "bc1qexampleexampleexampleexampleexample0",
+       "diff": 16384,
+       "intervals": {
+        "int_0": {
+         "jobs": 16188,
+         "sharesSent": 96720,
+         "sharesAccepted": 96666,
+         "sharesRejected": 34,
+         "solutionsAccepted": 1639863264,
+         "staleJobShares": 0,
+         "duplicateShares": 0,
+         "lowDifficultyShares": 0,
+         "reconnections": 0
+        }
+       }
+      },
+      "slots": {
+       "int_0": {
+        "revision": 0,
+        "spiNum": 1,
+        "pwrOn": 1,
+        "pwrOnTarget": 1,
+        "temperature": 54,
+        "temperature1": 53,
+        "currents": [
+         11297,
+         5254
+        ],
+        "solutions": 96738,
+        "errors": 0,
+        "ghs": 8033.7,
+        "errorRate": 0,
+        "chipRestarts": 0,
+        "wattPerGHs": 0.010878,
+        "osc": 409
+       }
+      }
+     }
+    ]
+   },
+   "error": null
+  }
+ }
+}

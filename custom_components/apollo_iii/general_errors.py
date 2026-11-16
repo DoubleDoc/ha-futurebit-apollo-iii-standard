@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 import re
 import time
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import dt as dt_util
 from .entity import ApolloEntity, miner_stats
@@ -245,8 +245,9 @@ class GeneralErrorState:
 
             target = ((self.logs.data or {}).get("dvfs") or {}).get("target_ths")
             avg5 = _num((intervals.get("int_300") or {}).get("bySol"))
-            if (uptime > FAULT_LOW_HASHRATE_GRACE and target and avg5 is not None
-                    and avg5 < FAULT_LOW_HASHRATE * target * 1000):
+            # Zero hashrate is already "no_hashrate"; do not count it twice.
+            if ("no_hashrate" not in conditions and uptime > FAULT_LOW_HASHRATE_GRACE
+                    and target and avg5 is not None and avg5 < FAULT_LOW_HASHRATE * target * 1000):
                 conditions.add("low_hashrate")
 
             error_rate = _num((intervals.get("int_300") or {}).get("errorRate"))
@@ -303,8 +304,8 @@ class GeneralErrorState:
 
 
 class GeneralEntity(ApolloEntity):
-    def __init__(self, entry, monitor, key, name):
-        super().__init__(entry, monitor.logs, key, name)
+    def __init__(self, entry, monitor, key):
+        super().__init__(entry, monitor.logs, key)
         self.monitor = monitor
         monitor.entities.append(self)
         # Expose generalized fault entities in the device Sensors section.
@@ -319,7 +320,7 @@ class GeneralEntity(ApolloEntity):
 
 class MinerErrorCount(GeneralEntity, SensorEntity, RestoreEntity):
     def __init__(self, entry, monitor):
-        super().__init__(entry, monitor, "miner_error_incidents", "Miner error count")
+        super().__init__(entry, monitor, "miner_error_incidents")
 
     async def async_added_to_hass(self):
         old = await self.async_get_last_state()
@@ -343,27 +344,27 @@ class MinerErrorCount(GeneralEntity, SensorEntity, RestoreEntity):
 
 
 class MinerLastError(GeneralEntity, SensorEntity):
-    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error", "Miner last error")
+    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error")
     @property
     def native_value(self): return self.monitor.last_text
 
 
 class MinerLastErrorTime(GeneralEntity, SensorEntity):
-    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error_time", "Miner last error time")
+    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error_time")
     @property
     def native_value(self): return self.monitor.last_time
 
 
 class MinerLastErrorCategory(GeneralEntity, SensorEntity):
-    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error_category", "Miner last error category")
+    def __init__(self, entry, monitor): super().__init__(entry, monitor, "miner_last_error_category")
     @property
     def native_value(self): return self.monitor.last_category
 
 
 class MinerFault(GeneralEntity, BinarySensorEntity):
     def __init__(self, entry, monitor):
-        super().__init__(entry, monitor, "miner_fault", "Miner fault")
-        self._attr_device_class = "problem"
+        super().__init__(entry, monitor, "miner_fault")
+        self._attr_device_class = BinarySensorDeviceClass.PROBLEM
 
     @property
     def is_on(self): return self.monitor.active

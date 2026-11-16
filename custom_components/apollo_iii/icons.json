@@ -1,0 +1,60 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "online": { "default": "mdi:server-network", "state": { "off": "mdi:server-network-off" } },
+      "restart_needed": { "default": "mdi:restart-alert", "state": { "off": "mdi:restart" } }
+    },
+    "button": {
+      "button_start": { "default": "mdi:play" },
+      "button_stop": { "default": "mdi:stop" },
+      "button_restart": { "default": "mdi:restart" }
+    },
+    "number": {
+      "set_minerhashrate": { "default": "mdi:speedometer" },
+      "set_fantemp": { "default": "mdi:thermometer-auto" },
+      "set_fanpwm": { "default": "mdi:fan" }
+    },
+    "select": {
+      "mode_select": { "default": "mdi:leaf" },
+      "fan_mode_select": { "default": "mdi:fan" }
+    },
+    "sensor": {
+      "hashrate_ths": { "default": "mdi:pickaxe" },
+      "hashrate_1h_ths": { "default": "mdi:pickaxe" },
+      "dvfs_target_ths": { "default": "mdi:target" },
+      "target_hashrate_mode": { "default": "mdi:target" },
+      "chip_speed_ghs": { "default": "mdi:chip" },
+      "chip_freq_osc": { "default": "mdi:sine-wave" },
+      "efficiency_j_th": { "default": "mdi:lightning-bolt-outline" },
+      "efficiency_1h_j_th": { "default": "mdi:lightning-bolt-outline" },
+      "hashboard_energy": { "default": "mdi:lightning-bolt" },
+      "fan_speed": { "default": "mdi:fan" },
+      "dvfs_fan_pwm": { "default": "mdi:fan" },
+      "fan_target_mode": { "default": "mdi:fan-auto" },
+      "dvfs_tune": { "default": "mdi:tune-variant", "state": { "holding": "mdi:pause-circle-outline" } },
+      "pool_accepted": { "default": "mdi:check-circle-outline" },
+      "pool_rejected": { "default": "mdi:close-circle-outline" },
+      "pool_sent": { "default": "mdi:send" },
+      "pool_host": { "default": "mdi:server" },
+      "hashboard_error_rate": { "default": "mdi:alert-circle-outline" },
+      "hardware_errors": { "default": "mdi:alert-circle-outline" },
+      "miner_error_incidents": { "default": "mdi:alert-octagon-outline" },
+      "miner_last_error": { "default": "mdi:alert-outline" },
+      "miner_last_error_time": { "default": "mdi:clock-alert-outline" },
+      "miner_last_error_category": { "default": "mdi:tag-outline" },
+      "service_status": { "default": "mdi:server" },
+      "miner_uptime": { "default": "mdi:timer-outline" },
+      "controller_uptime_raw": { "default": "mdi:clock-start" },
+      "cpu_used": { "default": "mdi:cpu-64-bit" },
+      "cpu_threads": { "default": "mdi:cpu-64-bit" },
+      "load_average": { "default": "mdi:gauge" },
+      "operating_system": { "default": "mdi:linux" },
+      "disk_0_percent": { "default": "mdi:harddisk" },
+      "disk_1_percent": { "default": "mdi:harddisk" },
+      "active_boards": { "default": "mdi:expansion-card" }
+    },
+    "switch": {
+      "mining_switch": { "default": "mdi:pickaxe" }
+    }
+  }
+}

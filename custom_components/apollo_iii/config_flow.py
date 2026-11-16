@@ -5,7 +5,6 @@ by the controller's MAC address, so an IP change is the same miner: DHCP
 discovery updates the host of an existing entry automatically.
 """
 import logging
-import re
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -16,6 +15,7 @@ from homeassistant.helpers.selector import (
 )
 from .api import ApolloAPI, ApolloAPIError, ApolloAuthError
 from .const import DOMAIN, DEFAULT_PORT
+from . import is_mac
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,10 +33,6 @@ async def validate(hass, host, port, password):
     mcu = await api.get_mcu()
     mac = ApolloAPI.device_mac(mcu)
     return (format_mac(mac) if mac else f"{host}:{port}"), mcu.get("hostname")
-
-
-def is_mac(value):
-    return bool(value) and bool(re.fullmatch(r"(?:[0-9a-f]{2}:){5}[0-9a-f]{2}", value))
 
 
 def _errors_for(err):
