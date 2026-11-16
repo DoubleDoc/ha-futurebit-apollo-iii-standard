@@ -54,7 +54,7 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 
 ## Local development
 
-`deploy.sh` copies `custom_components/apollo_iii` into a Home Assistant config folder, backing up the existing copy first. It does not restart Home Assistant; Python changes load only after a restart.
+Installs normally come from HACS (GitHub releases). For testing a change before releasing it, `deploy.sh` copies `custom_components/apollo_iii` into a Home Assistant config folder, backing up the existing copy first. It does not restart Home Assistant; Python changes load only after a restart.
 
 ```sh
 ./deploy.sh                                            # defaults below
@@ -67,6 +67,8 @@ HA_CONFIG=/path/to/config BACKUP_DIR=/path/to/backups ./deploy.sh
 | `BACKUP_DIR` | `$HOME/apollo-iii-backups` |
 
 Then check the configuration and restart Home Assistant (`ha core check` and `ha core restart` on Home Assistant OS).
+
+On an install managed by HACS, a deployed test build replaces the HACS-installed files until the next HACS update; after releasing, update through HACS so it tracks the released version again.
 
 ### Entity names and translations
 Entities have no hardcoded names: each sets a translation key (its unique-ID key, lowercased) and the name lives in `translations/en.json` under `entity.<platform>.<key>.name`. Select options and the tuning state are translated state keys. Add new entities to both translation files and, if they need an icon, to `icons.json`.
