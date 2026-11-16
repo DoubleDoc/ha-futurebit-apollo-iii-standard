@@ -24,4 +24,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # The monitor is initialized once in __init__.py before platform forwarding.
     data = hass.data[DOMAIN][entry.entry_id]
     from .general_errors import MinerFault
-    async_add_entities([MinerOnline(entry, data["miner"]), MinerFault(entry, data["general_error_monitor"])])
+    from .restart_needed import RestartNeeded
+    async_add_entities([MinerOnline(entry, data["miner"]), MinerFault(entry, data["general_error_monitor"]),
+                        RestartNeeded(entry, data["restart_tracker"])])

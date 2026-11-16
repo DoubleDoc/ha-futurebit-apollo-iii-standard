@@ -26,3 +26,11 @@ def miner_stats(data):
         return None
     stats = data.get("stats") or []
     return stats[0] if stats and isinstance(stats[0], dict) else None
+
+
+def is_set(value):
+    """Match apolloapi-v2's isSet(): only a positive number counts."""
+    try:
+        return value is not None and value != "" and float(value) > 0
+    except (TypeError, ValueError):
+        return False

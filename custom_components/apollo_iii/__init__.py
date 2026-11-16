@@ -119,6 +119,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     from .general_errors import GeneralErrorState
     hass.data[DOMAIN][entry.entry_id]["general_error_monitor"] = GeneralErrorState(
         coordinators["logs"], coordinators["miner"], coordinators["settings"], api)
+    from .restart_needed import RestartTracker
+    hass.data[DOMAIN][entry.entry_id]["restart_tracker"] = RestartTracker(
+        coordinators["miner"], coordinators["settings"])
     await async_cleanup(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

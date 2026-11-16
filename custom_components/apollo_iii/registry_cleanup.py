@@ -6,7 +6,8 @@ from homeassistant.helpers import entity_registry as er
 from .sensor import SPECS
 
 KEEP={s[0] for s in SPECS}|{'disk_0_percent','disk_1_percent','hashboard_energy','online','mode_select','mining_switch','set_minerHashrate','set_fanTemp','set_fanPwm','restart','start','stop','miner_error_incidents','miner_last_error','miner_last_error_time','miner_last_error_category','miner_fault',
-      'dvfs_target_ths','dvfs_tune','dvfs_board_voltage','dvfs_fan_pwm'}
+      'dvfs_target_ths','dvfs_tune','dvfs_board_voltage','dvfs_fan_pwm',
+      'fan_mode_select','restart_needed'}
 # Sensor keys from v0.1 and v0.2 that have been retired.
 OLD={'asic_detection_failures','asic_failed_sessions','asic_detection_fault','last_asic_fault','last_asic_fault_time','miner_sessions_observed','miner_failed_sessions','controller_temp','miner_mode','miner_hashrate_target','fan_temp_target','fan_pwm_target',
      'hashrate_ghs','efficiency','chip_speed','miner_temp_mcu','miner_fan_mcu',

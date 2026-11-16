@@ -1,4 +1,9 @@
-"""Apollo III custom tuning controls."""
+"""Apollo III custom tuning controls.
+
+These only save settings; the miner loads them at its next start (see the
+Restart needed binary sensor). Setting a fan PWM turns on fixed-PWM mode, which
+overrides the temperature target; use the Fan mode select to go back.
+"""
 from homeassistant.components.number import NumberEntity
 from homeassistant.exceptions import HomeAssistantError
 from .const import DOMAIN

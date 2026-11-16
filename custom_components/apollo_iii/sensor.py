@@ -5,7 +5,7 @@ from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCu
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from .const import DOMAIN
-from .entity import ApolloEntity, miner_stats
+from .entity import ApolloEntity, miner_stats, is_set
 
 def at(data, *path):
     for key in path:
@@ -18,13 +18,6 @@ def at(data, *path):
     return data
 
 MODE_LABELS = {'super_eco': 'Super ECO', 'eco': 'ECO', 'balanced': 'Balanced', 'turbo': 'Turbo'}
-
-def is_set(value):
-    """Match apolloapi-v2's isSet(): only a positive number counts."""
-    try:
-        return value is not None and value != '' and float(value) > 0
-    except (TypeError, ValueError):
-        return False
 
 def hashrate_target(settings):
     """Describe the hashrate target the miner actually runs with.
