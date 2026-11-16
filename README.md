@@ -7,5 +7,7 @@ Unofficial and not affiliated with FutureBit.
 ## Install
 Copy `custom_components/apollo_iii/` into your Home Assistant `/config/custom_components/`, restart, then add **FutureBit Apollo III** under Settings > Devices & services. You need the miner's host, GraphQL port and dashboard password.
 
+For local development, `./deploy.sh` copies the integration into `/config/custom_components/` (backing up the live copy first); restart Home Assistant afterwards.
+
 ## Status
 Early development; version history is in [`custom_components/apollo_iii/README.md`](custom_components/apollo_iii/README.md).
