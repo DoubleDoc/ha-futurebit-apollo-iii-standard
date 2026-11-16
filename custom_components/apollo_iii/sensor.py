@@ -173,7 +173,7 @@ DVFS_SPECS = (
     ('dvfs_tune','Tuning state','tune',None,None,None,True),
     # The miner logs the voltage to 3 decimals; HA's voltage default rounds it to whole volts.
     ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,False,3),
-    ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,True),
+    ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,False),
 )
 
 class DiskPercent(ApolloEntity, SensorEntity):
