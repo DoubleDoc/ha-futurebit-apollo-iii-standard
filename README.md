@@ -112,6 +112,12 @@ Error messages that appear in the miner's log are also counted. A deliberately s
       custom_components.apollo_iii: debug
   ```
 
+## Authorship
+
+This integration was built with **Claude**, Anthropic's AI model, working in Claude Code. Claude did the heavy lifting: since this repository was created at version 0.3.9, Claude wrote essentially all of the code, the tests, the CI setup and the documentation. That included auditing every sensor against the miner's API and FutureBit's open-source backend and dashboard code, finding and fixing the bugs that turned up, and rebuilding the fault monitor, setup flow and controls.
+
+[DoubleDoc](https://github.com/DoubleDoc) directed the project: deciding what to build and how it should behave, reviewing the results, testing on a real Apollo III Standard, and making the release decisions. Versions before 0.3.9 predate this repository.
+
 ## More
 
 - [CHANGELOG.md](CHANGELOG.md): version history.
