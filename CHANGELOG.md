@@ -6,6 +6,7 @@ All notable changes to the FutureBit Apollo III Standard integration. Newest fir
 - **Debug logging** for troubleshooting (integration page > Enable debug logging): each API call and its duration, login and token refresh, a one-line summary of every miner poll and log snapshot (DVFS target, voltage, phase, tuner actions), stats going stale and recovering, fault-monitor decisions (condition started, counted, cleared; why a restart did or did not count), Restart needed snapshots and pending changes, tuner adjustments, and settings and commands sent from Home Assistant.
 - Passwords, tokens, MAC addresses and the pool username are never logged.
 - The README's debug logging instructions are corrected.
+- README: tested with Apollo Web OS v2.1.3.
 
 ## 1.0.2
 - Repository published. HACS validation now runs with no ignored checks (brand images are found in `custom_components/apollo_iii/brand/`).

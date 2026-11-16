@@ -4,7 +4,7 @@ A Home Assistant custom integration for the **FutureBit Apollo III Standard**, t
 
 Unofficial and not affiliated with FutureBit.
 
-> Tested on an Apollo III Standard running Apollo WebOS 2 (apolloapi-v2) with Home Assistant 2026.10.
+> Tested on an Apollo III Standard running **Web OS v2.1.3** (FutureBit's Apollo software), with Home Assistant 2026.10. Other Web OS versions may report data differently; if something looks wrong, please open an issue and include your Web OS version.
 
 ## Features
 
@@ -17,7 +17,7 @@ Unofficial and not affiliated with FutureBit.
 
 ## Requirements
 
-- A FutureBit Apollo III **Standard** on your network, with its Apollo web dashboard set up (you need the dashboard password).
+- A FutureBit Apollo III **Standard** on your network, with its Apollo web dashboard set up (you need the dashboard password). Tested with Web OS v2.1.3.
 - Home Assistant 2026.3 or newer.
 
 ## Installation

@@ -18,7 +18,7 @@ Notes for working on the integration. For using it, see [README.md](README.md).
 ## How it works
 
 ### Data sources
-The miner runs FutureBit's Apollo WebOS 2 backend ([apolloapi-v2](https://github.com/jstefanop/apolloapi-v2), `staging` branch for Apollo III; the UI is [apolloui-v2](https://github.com/jstefanop/apolloui-v2)). The integration talks to its GraphQL API at `http://<host>:5000/api/graphql`.
+The miner runs FutureBit's Apollo Web OS (tested with v2.1.3), whose backend is ([apolloapi-v2](https://github.com/jstefanop/apolloapi-v2), `staging` branch for Apollo III; the UI is [apolloui-v2](https://github.com/jstefanop/apolloui-v2)). The integration talks to its GraphQL API at `http://<host>:5000/api/graphql`.
 
 | Coordinator | Interval | Query | Auth |
 |---|---|---|---|
