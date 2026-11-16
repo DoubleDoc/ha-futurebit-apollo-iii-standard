@@ -137,12 +137,14 @@ class ApolloSensor(ApolloEntity, SensorEntity):
 
 class DvfsSensor(ApolloEntity, SensorEntity):
     """Values the miner's DVFS tuner prints to its log every few seconds."""
-    def __init__(self,entry,coordinator,key,name,field,unit=None,device_class=None,state_class=None,diagnostic=False):
+    def __init__(self,entry,coordinator,key,name,field,unit=None,device_class=None,state_class=None,diagnostic=False,precision=None):
         super().__init__(entry,coordinator,key,name)
         self.field=field
         self._attr_native_unit_of_measurement=unit
         self._attr_device_class=device_class
         self._attr_state_class=state_class
+        if precision is not None:
+            self._attr_suggested_display_precision=precision
         if diagnostic:
             self._attr_entity_category=EntityCategory.DIAGNOSTIC
 
@@ -169,7 +171,8 @@ class DvfsSensor(ApolloEntity, SensorEntity):
 DVFS_SPECS = (
     ('dvfs_target_ths','Hashrate target','target_ths','TH/s',None,SensorStateClass.MEASUREMENT,False),
     ('dvfs_tune','Tuning state','tune',None,None,None,True),
-    ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,True),
+    # The miner logs the voltage to 3 decimals; HA's voltage default rounds it to whole volts.
+    ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,False,3),
     ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,True),
 )
 

@@ -60,3 +60,6 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 
 ### v0.4.1
 - The miner's `upTime` can include the controller's clock jump at boot (no RTC; NTP sets the time after the miner starts), so `Miner uptime` can read longer than the controller has been up. The fault monitor's warm-up periods now also count from when HA saw the restart, so a reboot cannot skip them.
+
+### v0.4.2
+- `Board voltage` shows 3 decimals (as the miner reports it) and moves from Diagnostic to Sensors.
