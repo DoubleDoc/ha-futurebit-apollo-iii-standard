@@ -46,7 +46,8 @@ async def test_controls_are_logged(hass: HomeAssistant, fake_miner, config_entry
     assert "Restart needed: Power mode: super_eco → turbo" in text
     assert "Sending miner command: restart" in text
     assert "Settings.update took" in text and "Miner.restart took" in text
-    assert "Settings.read took" not in text  # routine polls are not timed twice
+    for routine in ("Settings.read took", "Miner.stats took", "Mcu.stats took", "Logs.read took"):
+        assert routine not in text  # routine polls are not timed twice
     assert_no_secrets(text)
 
 

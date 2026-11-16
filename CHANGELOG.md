@@ -2,6 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.4
+- Debug logging: routine miner polls are no longer timed twice (the coordinator already logs their duration).
+
 ## 1.0.3
 - **Debug logging** for troubleshooting (integration page > Enable debug logging): logins, token refresh, setting changes, commands and slow API calls with their duration, a one-line summary of every miner poll and log snapshot (DVFS target, voltage, phase, tuner actions), stats going stale and recovering, fault-monitor decisions (condition started, counted, cleared; why a restart did or did not count), Restart needed snapshots and pending changes, tuner adjustments, and settings and commands sent from Home Assistant.
 - Passwords, tokens, MAC addresses and the pool username are never logged.

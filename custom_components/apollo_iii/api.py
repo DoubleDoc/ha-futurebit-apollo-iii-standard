@@ -75,7 +75,7 @@ class ApolloAPI:
         elapsed = time.monotonic() - started
         # Routine polls are already timed by the coordinator ("Finished fetching ...");
         # log logins, writes and slow calls only.
-        if not read_only or not auth or elapsed > SLOW_REQUEST:
+        if not read_only or operation == "Auth.login" or elapsed > SLOW_REQUEST:
             _LOGGER.debug("%s took %.2f s", operation, elapsed)
         return payload.get("data") or {}
 
