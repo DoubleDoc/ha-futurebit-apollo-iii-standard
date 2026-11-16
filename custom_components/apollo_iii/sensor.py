@@ -1,9 +1,10 @@
 """Verified Apollo III telemetry and energy estimate."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, UnitOfElectricPotential, PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.util import dt as dt_util
 from .const import DOMAIN
 from .entity import ApolloEntity, miner_stats, is_set
 
@@ -190,20 +191,92 @@ class DvfsSensor(ApolloEntity, SensorEntity):
     def native_value(self):
         return self._dvfs.get(self.field)
 
-    @property
-    def extra_state_attributes(self):
-        if self.field != 'tune':
-            return None
-        return {'dvfs_state': self._dvfs.get('state'), 'hitrate': self._dvfs.get('hitrate'),
-                'log_time': self._dvfs.get('stamp')}
-
 DVFS_SPECS = (
     ('dvfs_target_ths','Hashrate target','target_ths','TH/s',None,SensorStateClass.MEASUREMENT,False),
-    ('dvfs_tune','Tuning state','tune',None,None,None,True),
     # The miner logs the voltage to 3 decimals; HA's voltage default rounds it to whole volts.
     ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,False,3),
     ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,False),
 )
+
+class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
+    """Whether the DVFS tuner is actually changing anything.
+
+    The miner's own phase label is misleading: in Super ECO it stays at
+    TUNE_STEPPING_UP indefinitely while voltage and frequency are constant.
+    "Adjusting" means the board voltage setpoint or chip frequency (osc)
+    changed, or the tuner logged an action, within TUNING_WINDOW; otherwise
+    "Holding". Unknown until it has watched for TUNING_WINDOW.
+    """
+    _attr_device_class=SensorDeviceClass.ENUM
+    _attr_options=['Adjusting','Holding']
+    _attr_entity_category=EntityCategory.DIAGNOSTIC
+    _attr_icon='mdi:tune-variant'
+    TUNING_WINDOW=timedelta(minutes=10)
+
+    def __init__(self,entry,logs,miner):
+        super().__init__(entry,logs,'dvfs_tune','Tuning state')
+        self.miner=miner
+        self._last={}
+        self._last_change=None
+        self._watch_since=None
+        self._last_action=None
+
+    async def async_added_to_hass(self):
+        old=await self.async_get_last_state()
+        if old is not None:
+            try:
+                self._last_change=datetime.fromisoformat(old.attributes.get('last_adjustment'))
+            except (TypeError,ValueError):
+                pass
+        await super().async_added_to_hass()
+        self.async_on_remove(self.miner.async_add_listener(self._handle_coordinator_update))
+
+    def _observe(self):
+        now=dt_util.utcnow()
+        if self._watch_since is None:
+            self._watch_since=now
+        dvfs=(self.coordinator.data or {}).get('dvfs') or {}
+        stats=miner_stats(self.miner.data)
+        current={'voltage':dvfs.get('voltage'),
+                 'osc':at(stats,'master','osc') if stats else None}
+        for key,value in current.items():
+            if value is None:
+                continue
+            if key in self._last and self._last[key] != value:
+                self._last_change=now
+            self._last[key]=value
+        action=dvfs.get('last_action')
+        if action and action != self._last_action:
+            # The log snapshot spans only seconds, so an action in it is recent.
+            self._last_change=now
+            self._last_action=action
+
+    def _handle_coordinator_update(self):
+        self._observe()
+        super()._handle_coordinator_update()
+
+    @property
+    def available(self):
+        return super().available and not (self.coordinator.data or {}).get('dvfs_stale')
+
+    @property
+    def native_value(self):
+        now=dt_util.utcnow()
+        if self._last_change and now-self._last_change < self.TUNING_WINDOW:
+            return 'Adjusting'
+        if self._watch_since and (now-self._watch_since >= self.TUNING_WINDOW
+                                  or self._last_change is not None):
+            return 'Holding'
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        dvfs=(self.coordinator.data or {}).get('dvfs') or {}
+        return {'tuner_phase':dvfs.get('tune'),'dvfs_state':dvfs.get('state'),
+                'board_voltage':self._last.get('voltage'),'frequency_osc':self._last.get('osc'),
+                'chip_voltage_avg':dvfs.get('chip_voltage'),'hitrate':dvfs.get('hitrate'),
+                'last_tuner_action':self._last_action,
+                'last_adjustment':self._last_change.isoformat() if self._last_change else None}
 
 class DiskPercent(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement=PERCENTAGE
@@ -280,6 +353,7 @@ async def async_setup_entry(hass,entry,async_add_entities):
     entities.append(MiningEnergy(entry,data['miner']))
     entities.append(Efficiency1h(entry,data['miner']))
     entities.extend(DvfsSensor(entry,data['logs'],*spec) for spec in DVFS_SPECS)
+    entities.append(TuningActivity(entry,data['logs'],data['miner']))
     from .general_errors import (MinerErrorCount, MinerLastError,
                                  MinerLastErrorTime, MinerLastErrorCategory)
     general = data["general_error_monitor"]

@@ -1,7 +1,7 @@
 {
   "domain": "apollo_iii",
   "name": "FutureBit Apollo III",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "documentation": "https://github.com/DoubleDoc/apollo-iii-integration",
   "issue_tracker": "https://github.com/DoubleDoc/apollo-iii-integration/issues",
   "config_flow": true,

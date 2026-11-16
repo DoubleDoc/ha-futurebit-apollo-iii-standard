@@ -15,6 +15,11 @@ DVFS_STATE = re.compile(
 DVFS_FAN = re.compile(r"DVFS: fan \d+ PWM (\d+)% speed (\d+) RPM")
 DVFS_HIT = re.compile(r"DVFS: hitrate ([\d.]+)")
 DVFS_POWER = re.compile(r"DVFS: avg_temp .*?power ([\d.]+)")
+DVFS_CHIP_VOLT = re.compile(r"DVFS: avg_volt 1:([\d.]+)")
+# Lines the tuner prints when it changes something (strings in apollo-miner-v3).
+DVFS_ACTION = re.compile(
+    r"DVFS: (?:DVFS_TUNE_|lower down voltage|increasing target hashrate|"
+    r"SetVoltage|setFreq|adjMinVolt|power profile derate|power limit)")
 
 
 def entries(content):
@@ -52,6 +57,8 @@ def parse_dvfs(items):
         if not message.startswith("DVFS:"):
             continue
         result["stamp"] = stamp
+        if DVFS_ACTION.search(message):
+            result["last_action"] = f"{stamp} {message[6:].strip()}"[:200]
         if m := DVFS_STATE.search(message):
             result["state"], result["tune"] = m.group(1), m.group(2)
             result["target_ths"] = _num(m.group(3))
@@ -63,4 +70,6 @@ def parse_dvfs(items):
             result["hitrate"] = _num(m.group(1))
         elif m := DVFS_POWER.search(message):
             result["power"] = _num(m.group(1))
+        elif m := DVFS_CHIP_VOLT.search(message):
+            result["chip_voltage"] = _num(m.group(1))
     return result
