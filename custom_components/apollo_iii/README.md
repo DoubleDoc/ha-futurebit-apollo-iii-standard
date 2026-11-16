@@ -72,3 +72,7 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 ### v0.4.6
 - New `Chip speed` (GH/s per chip, 30 s; 21 chips x chip speed = hashrate) in Sensors, and `Chip frequency (osc)` (raw value, unit undocumented) in Diagnostic.
 - `Chip frequency (osc)` moves to Sensors (0.4.7).
+
+### v0.4.8
+- Fix HA deprecation warning (breaks in 2027.2): sensors no longer use the `group` attribute name, which HA now reserves for entity groups.
+- `Tuning state` restores its watch start (`watching_since`) across HA restarts, so it no longer reads unknown for 10 minutes after each restart.

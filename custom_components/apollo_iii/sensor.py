@@ -88,7 +88,7 @@ class ApolloSensor(ApolloEntity, SensorEntity):
     def __init__(self, entry, coordinator, spec):
         key,name,group,path,scale,unit,device_class,state_class,diagnostic = spec
         super().__init__(entry,coordinator,key,name)
-        self.group,self.path,self.scale = group,path,scale
+        self.source,self.path,self.scale = group,path,scale
         self._attr_native_unit_of_measurement=unit
         self._attr_device_class=device_class
         self._attr_state_class=state_class
@@ -98,7 +98,7 @@ class ApolloSensor(ApolloEntity, SensorEntity):
     @property
     def native_value(self):
         data=self.coordinator.data or {}
-        if self.group == 'miner':
+        if self.source == 'miner':
             data=miner_stats(data)
             if data is None:
                 return None
@@ -135,7 +135,7 @@ class ApolloSensor(ApolloEntity, SensorEntity):
     @property
     def available(self):
         # Frozen miner stats would otherwise look like live readings.
-        if self.group == 'miner' and (self.coordinator.data or {}).get('stale'):
+        if self.source == 'miner' and (self.coordinator.data or {}).get('stale'):
             return False
         return super().available
 
@@ -208,7 +208,8 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
     TUNE_STEPPING_UP indefinitely while voltage and frequency are constant.
     "Adjusting" means the board voltage setpoint or chip frequency (osc)
     changed, or the tuner logged an action, within TUNING_WINDOW; otherwise
-    "Holding". Unknown until it has watched for TUNING_WINDOW.
+    "Holding". Unknown until it has watched for TUNING_WINDOW (first install;
+    the watch start and last change are restored across HA restarts).
     """
     _attr_device_class=SensorDeviceClass.ENUM
     _attr_options=['Adjusting','Holding']
@@ -227,10 +228,11 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
     async def async_added_to_hass(self):
         old=await self.async_get_last_state()
         if old is not None:
-            try:
-                self._last_change=datetime.fromisoformat(old.attributes.get('last_adjustment'))
-            except (TypeError,ValueError):
-                pass
+            for attr,field in (('last_adjustment','_last_change'),('watching_since','_watch_since')):
+                try:
+                    setattr(self,field,datetime.fromisoformat(old.attributes.get(attr)))
+                except (TypeError,ValueError):
+                    pass
         await super().async_added_to_hass()
         self.async_on_remove(self.miner.async_add_listener(self._handle_coordinator_update))
 
@@ -279,7 +281,8 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
                 'board_voltage':self._last.get('voltage'),'frequency_osc':self._last.get('osc'),
                 'chip_voltage_avg':dvfs.get('chip_voltage'),'hitrate':dvfs.get('hitrate'),
                 'last_tuner_action':self._last_action,
-                'last_adjustment':self._last_change.isoformat() if self._last_change else None}
+                'last_adjustment':self._last_change.isoformat() if self._last_change else None,
+                'watching_since':self._watch_since.isoformat() if self._watch_since else None}
 
 class DiskPercent(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement=PERCENTAGE
