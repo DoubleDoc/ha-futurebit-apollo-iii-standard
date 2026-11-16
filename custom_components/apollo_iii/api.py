@@ -6,6 +6,7 @@ import re
 from aiohttp import ClientError, ClientSession
 
 _LOGGER = logging.getLogger(__name__)
+SLOW_REQUEST = 1.0  # seconds
 _OPERATION = re.compile(r"\{\s*(\w+)\s*\{\s*(\w+)")
 
 
@@ -71,7 +72,11 @@ class ApolloAPI:
             if unauthenticated:
                 raise ApolloAuthError(message)
             raise ApolloAPIError(message)
-        _LOGGER.debug("%s took %.2f s", operation, time.monotonic() - started)
+        elapsed = time.monotonic() - started
+        # Routine polls are already timed by the coordinator ("Finished fetching ...");
+        # log logins, writes and slow calls only.
+        if not read_only or not auth or elapsed > SLOW_REQUEST:
+            _LOGGER.debug("%s took %.2f s", operation, elapsed)
         return payload.get("data") or {}
 
     async def login(self):

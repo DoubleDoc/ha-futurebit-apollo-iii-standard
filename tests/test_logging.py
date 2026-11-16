@@ -30,7 +30,7 @@ def debug_log(caplog):
 async def test_setup_and_polling_are_logged(hass: HomeAssistant, fake_miner, config_entry, debug_log) -> None:
     await setup(hass, config_entry)
     text = debug_log.text
-    for expected in ("Logging in to http://", "Logged in", "Miner.stats took", "Mcu.stats took",
+    for expected in ("Logging in to http://", "Logged in", "Auth.login took",
                      "Miner poll: service online", "Log snapshot:", "DVFS fresh (target 8.0 TH/s",
                      "Running settings recorded"):
         assert expected in text, expected
@@ -45,6 +45,8 @@ async def test_controls_are_logged(hass: HomeAssistant, fake_miner, config_entry
     assert "Saving settings {'minerMode': 'turbo'}" in text
     assert "Restart needed: Power mode: super_eco → turbo" in text
     assert "Sending miner command: restart" in text
+    assert "Settings.update took" in text and "Miner.restart took" in text
+    assert "Settings.read took" not in text  # routine polls are not timed twice
     assert_no_secrets(text)
 
 
