@@ -71,3 +71,4 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 
 ### v0.4.6
 - New `Chip speed` (GH/s per chip, 30 s; 21 chips x chip speed = hashrate) in Sensors, and `Chip frequency (osc)` (raw value, unit undocumented) in Diagnostic.
+- `Chip frequency (osc)` moves to Sensors (0.4.7).
