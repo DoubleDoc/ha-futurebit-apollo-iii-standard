@@ -43,3 +43,15 @@ Generalized miner fault monitoring only. Retires ASIC-specific entities, miner f
 - `Hashrate target setting` now shows the target the miner actually runs with. The Apollo backend uses `minerHashrate` only in custom mode; in preset modes it was showing the unused stored value (for example 14 TH/s while in Super ECO). It now reads `Super ECO preset`, `ECO preset` and so on, or `Custom N TH/s`. Attributes `miner_mode` and `custom_hashrate_ths` keep the raw values.
 - `Fan control setting` treats 0 as unset, matching the backend.
 - The number entity is renamed `Custom mode target hashrate` (entity ID unchanged), because it has no effect in preset modes.
+
+### v0.4.0
+Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apolloui-v2).
+- **Fault monitor rebuilt.** The miner's MINER log is a ~25-line `screen` snapshot that scrolls in about 9 seconds, so log matching alone missed most errors. The monitor now checks the miner stats every poll:
+  - Conditions (count once per episode; the fault stays on while they last): miner not running when requested on (120 s), stats stopped updating (60 s), no hashrate after 5 min uptime (30 s), 5-min hashrate below half of the DVFS target after 15 min uptime (300 s), chip error rate over 5% (60 s), hashboard not powered (60 s).
+  - Events: pool reconnection; miner restart not preceded by a start/stop/restart or setting change (from HA or the Apollo UI) in the last 15 min.
+  - A deliberately stopped miner is never a fault. Log matching remains, now with wrapped lines joined.
+  - `Miner fault` and `Miner error count` carry an `active_conditions` attribute.
+- **Stale stats.** Miner sensors go unavailable, and `Miner online` turns off, when the stats' `date` hasn't changed for 60 s or is more than 10 min off HA's clock (the dashboard uses 1 min). The energy estimate skips stale samples.
+- **Error sensors fixed.** The slot-level error fields are always 0 on the Apollo III. `Hashboard error rate` is now `Chip error rate (5 min)` from the master interval stats, and `Miner statistics errors` is now `Chip errors since miner start`. Entity IDs unchanged.
+- **New sensors:** `Hashrate (1 h average)`; from the miner's DVFS log lines: `Hashrate target` (TH/s the active mode is tuning to), `Tuning state` (with DVFS state and hitrate attributes), `Board voltage`, `Fan PWM`.
+- Removed unused `faults.py`.

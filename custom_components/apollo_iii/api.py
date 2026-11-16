@@ -1,5 +1,6 @@
 """Local GraphQL client for Apollo III."""
 import asyncio
+import time
 import logging
 from aiohttp import ClientError, ClientSession
 
@@ -15,6 +16,8 @@ class ApolloAPI:
         self.password = password
         self.token = None
         self._lock = asyncio.Lock()
+        # Monotonic time of the last setting change or miner command sent from HA.
+        self.last_write = None
 
     async def _request(self, query, variables=None, *, auth=True, retry=True, read_only=True):
         if auth and not self.token:
@@ -93,8 +96,12 @@ class ApolloAPI:
             stats { result { stats {
               uuid version date comport statVersion
               master { upTime diff boards errorSpi osc hwAddr boardsI boardsW wattPerGHs
-                intervals { int_0 { name interval bySol byDiff byPool byJobs
-                  solutions errors errorRate chipSpeed chipRestarts } } }
+                intervals {
+                  int_0 { name interval bySol byDiff byPool byJobs
+                    solutions errors errorRate chipSpeed chipRestarts }
+                  int_30 { bySol errorRate }
+                  int_300 { bySol errorRate }
+                  int_3600 { bySol byPool errorRate chipSpeed } } }
               temperature { count min avr max }
               fans { int_0 { rpm } }
               pool { host port userName diff intervals { int_0 {
@@ -128,6 +135,7 @@ class ApolloAPI:
         }
 
     async def update_settings(self, changes):
+        self.last_write = time.monotonic()
         data = await self._request(
             """query($input:SettingsUpdateInput!) {
               Settings { update(input:$input) {
@@ -141,6 +149,7 @@ class ApolloAPI:
     async def miner_command(self, command):
         if command not in ("start", "stop", "restart"):
             raise ValueError("Invalid miner command")
+        self.last_write = time.monotonic()
         data = await self._request(
             f"{{ Miner {{ {command} {{ error {{ message }} }} }} }}", read_only=False
         )

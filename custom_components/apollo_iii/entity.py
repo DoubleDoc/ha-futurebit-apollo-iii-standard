@@ -17,3 +17,12 @@ class ApolloEntity(CoordinatorEntity):
             model="Apollo III",
             configuration_url=f"http://{entry.data['host']}/",
         )
+
+
+def miner_stats(data):
+    """First board's stats when the miner is online and its stats are fresh."""
+    data = data or {}
+    if (data.get("online") or {}).get("status") != "online" or data.get("stale"):
+        return None
+    stats = data.get("stats") or []
+    return stats[0] if stats and isinstance(stats[0], dict) else None

@@ -1,11 +1,11 @@
 """Verified Apollo III telemetry and energy estimate."""
 from datetime import datetime, timezone
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
-from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, PERCENTAGE
+from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, UnitOfElectricPotential, PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from .const import DOMAIN
-from .entity import ApolloEntity
+from .entity import ApolloEntity, miner_stats
 
 def at(data, *path):
     for key in path:
@@ -60,13 +60,16 @@ SPECS = [
     ('temperature_max','Miner maximum temperature','miner',('temperature','max'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,True),
     ('hashboard_temp','Hashboard temperature','miner',('slots','int_0','temperature1'),1,'°C',SensorDeviceClass.TEMPERATURE,SensorStateClass.MEASUREMENT,False),
     ('fan_speed','Miner fan speed','miner',('fans','int_0','rpm',0),1,'rpm',None,SensorStateClass.MEASUREMENT,False),
-    ('hashboard_error_rate','Hashboard error rate','miner',('slots','int_0','errorRate'),1,'%',None,SensorStateClass.MEASUREMENT,False),
+    # The slot-level errorRate/errors fields are always 0 on the Apollo III;
+    # chip errors are reported in the master interval stats.
+    ('hashboard_error_rate','Chip error rate (5 min)','miner',('master','intervals','int_300','errorRate'),1,'%',None,SensorStateClass.MEASUREMENT,False),
     ('efficiency_j_th','Mining efficiency','miner',('slots','int_0','wattPerGHs'),1000,'J/TH',None,SensorStateClass.MEASUREMENT,False),
     ('pool_accepted','Pool accepted shares','miner',('pool','intervals','int_0','sharesAccepted'),1,None,None,None,False),
     ('pool_rejected','Pool rejected shares','miner',('pool','intervals','int_0','sharesRejected'),1,None,None,None,False),
     ('pool_sent','Pool sent shares','miner',('pool','intervals','int_0','sharesSent'),1,None,None,None,True),
     ('solutions','Miner solutions','miner',('slots','int_0','solutions'),1,None,None,None,True),
-    ('hardware_errors','Miner statistics errors','miner',('slots','int_0','errors'),1,None,None,None,True),
+    ('hardware_errors','Chip errors since miner start','miner',('master','intervals','int_0','errors'),1,None,None,SensorStateClass.TOTAL_INCREASING,True),
+    ('hashrate_1h_ths','Hashrate (1 h average)','miner',('master','intervals','int_3600','bySol'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
     ('spi_errors','Master SPI errors','miner',('master','errorSpi'),1,None,None,None,True),
     ('active_boards','Active hashboards','miner',('master','boards'),1,None,None,None,True),
     ('miner_uptime','Miner uptime','miner',('master','upTime'),1,'s',None,SensorStateClass.MEASUREMENT,True),
@@ -99,12 +102,9 @@ class ApolloSensor(ApolloEntity, SensorEntity):
     def native_value(self):
         data=self.coordinator.data or {}
         if self.group == 'miner':
-            if at(data,'online','status') != 'online':
+            data=miner_stats(data)
+            if data is None:
                 return None
-            stats=data.get('stats') or []
-            if not stats:
-                return None
-            data=stats[0]
         value=at(data,*self.path)
         if self._attr_unique_id.endswith('_target_hashrate_mode'):
             return hashrate_target(data.get('settings') or {})
@@ -134,6 +134,51 @@ class ApolloSensor(ApolloEntity, SensorEntity):
             # Used only when the mode is custom.
             'custom_hashrate_ths': settings.get('minerHashrate'),
         }
+
+    @property
+    def available(self):
+        # Frozen miner stats would otherwise look like live readings.
+        if self.group == 'miner' and (self.coordinator.data or {}).get('stale'):
+            return False
+        return super().available
+
+class DvfsSensor(ApolloEntity, SensorEntity):
+    """Values the miner's DVFS tuner prints to its log every few seconds."""
+    def __init__(self,entry,coordinator,key,name,field,unit=None,device_class=None,state_class=None,diagnostic=False):
+        super().__init__(entry,coordinator,key,name)
+        self.field=field
+        self._attr_native_unit_of_measurement=unit
+        self._attr_device_class=device_class
+        self._attr_state_class=state_class
+        if diagnostic:
+            self._attr_entity_category=EntityCategory.DIAGNOSTIC
+
+    @property
+    def _dvfs(self):
+        return (self.coordinator.data or {}).get('dvfs') or {}
+
+    @property
+    def available(self):
+        data=self.coordinator.data or {}
+        return super().available and not data.get('dvfs_stale') and self.field in self._dvfs
+
+    @property
+    def native_value(self):
+        return self._dvfs.get(self.field)
+
+    @property
+    def extra_state_attributes(self):
+        if self.field != 'tune':
+            return None
+        return {'dvfs_state': self._dvfs.get('state'), 'hitrate': self._dvfs.get('hitrate'),
+                'log_time': self._dvfs.get('stamp')}
+
+DVFS_SPECS = (
+    ('dvfs_target_ths','Hashrate target','target_ths','TH/s',None,SensorStateClass.MEASUREMENT,False),
+    ('dvfs_tune','Tuning state','tune',None,None,None,True),
+    ('dvfs_board_voltage','Board voltage','voltage',UnitOfElectricPotential.VOLT,SensorDeviceClass.VOLTAGE,SensorStateClass.MEASUREMENT,True),
+    ('dvfs_fan_pwm','Fan PWM','fan_pwm',PERCENTAGE,None,SensorStateClass.MEASUREMENT,True),
+)
 
 class DiskPercent(ApolloEntity, SensorEntity):
     _attr_native_unit_of_measurement=PERCENTAGE
@@ -177,9 +222,8 @@ class MiningEnergy(ApolloEntity, SensorEntity, RestoreEntity):
     def _sample(self):
         now=datetime.now(timezone.utc)
         data=self.coordinator.data or {}
-        stats=data.get('stats') or []
-        online=at(data,'online','status')=='online'
-        power=at(stats[0],'master','boardsW') if online and stats else None
+        stats=miner_stats(data)
+        power=at(stats,'master','boardsW') if stats else None
         if not isinstance(power,(int,float)) or power < 0:
             self._last_time=None
             self._last_power=None
@@ -202,13 +246,14 @@ class MiningEnergy(ApolloEntity, SensorEntity, RestoreEntity):
     @property
     def extra_state_attributes(self):
         return {'scope':'Reported hashboard power only; excludes controller and PSU losses',
-                'gap_handling':'Intervals over 60 seconds are excluded'}
+                'gap_handling':'Intervals over 60 seconds or with stale miner stats are excluded'}
 
 async def async_setup_entry(hass,entry,async_add_entities):
     data=hass.data[DOMAIN][entry.entry_id]
     entities=[ApolloSensor(entry,data[spec[2]],spec) for spec in SPECS]
     entities.extend(DiskPercent(entry,data['mcu'],i,label) for i,label in ((0,'Root'),(1,'Log')))
     entities.append(MiningEnergy(entry,data['miner']))
+    entities.extend(DvfsSensor(entry,data['logs'],*spec) for spec in DVFS_SPECS)
     from .general_errors import (MinerErrorCount, MinerLastError,
                                  MinerLastErrorTime, MinerLastErrorCategory)
     general = data["general_error_monitor"]
