@@ -1,4 +1,6 @@
-# FutureBit Apollo III v0.3.3
+# FutureBit Apollo III Standard: changelog
+
+## v0.3.3
 
 ## Changes
 - Device **Visit** URL now uses the Apollo web portal on standard HTTP port 80, independent of GraphQL port 5000.
@@ -83,3 +85,7 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 - **DHCP discovery** by hostname `futurebit-apollo*`; for a miner already set up, discovery updates its IP automatically.
 - Config entries are identified by the controller's MAC address instead of host:port. Existing entries are migrated at startup.
 - The default entry title `Apollo III (<host>)` follows the host after Reconfigure or a discovery IP update; a renamed title is kept.
+
+### v0.5.1
+- Named for the model it supports, the **Apollo III Standard** (miner only): integration, device ("FutureBit Apollo III Standard", model "Apollo III Standard"), setup forms, and the default entry title "Apollo III Standard (<host>)". Existing entity IDs and the `apollo_iii` domain are unchanged.
+- GitHub repository renamed to `ha-futurebit-apollo-iii-standard`.

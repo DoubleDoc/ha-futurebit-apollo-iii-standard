@@ -68,7 +68,7 @@ class ApolloFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=f"Apollo III ({host})",
+                    title=f"Apollo III Standard ({host})",
                     data={"host": host, "port": user_input["port"],
                           "password": user_input["password"]})
         defaults = user_input or {}
@@ -100,7 +100,7 @@ class ApolloFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured(updates={"host": self._host})
                 return self.async_create_entry(
-                    title=f"Apollo III ({self._host})",
+                    title=f"Apollo III Standard ({self._host})",
                     data={"host": self._host, "port": user_input["port"],
                           "password": user_input["password"]})
         schema = vol.Schema({

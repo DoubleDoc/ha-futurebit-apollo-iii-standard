@@ -12,9 +12,9 @@ class ApolloEntity(CoordinatorEntity):
         self._attr_name = name
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="FutureBit Apollo III",
+            name="FutureBit Apollo III Standard",
             manufacturer="FutureBit",
-            model="Apollo III",
+            model="Apollo III Standard",
             configuration_url=f"http://{entry.data['host']}/",
         )
 

@@ -1,4 +1,4 @@
-"""Apollo III Home Assistant integration."""
+"""FutureBit Apollo III Standard (miner-only model) Home Assistant integration."""
 from datetime import datetime, timedelta
 import logging
 import re
@@ -125,10 +125,11 @@ def _migrate_unique_id(hass, entry, mcu):
 
 
 def _sync_title(hass, entry):
-    """Keep the default "Apollo III (<host>)" title in step with the host after
-    Reconfigure or a DHCP address update. A title the user renamed is left alone."""
-    match = re.fullmatch(r"Apollo III \((.+)\)", entry.title or "")
-    wanted = f"Apollo III ({entry.data['host']})"
+    """Keep the default "Apollo III Standard (<host>)" title in step with the
+    host after Reconfigure or a DHCP address update, and update the pre-0.5.1
+    "Apollo III (<host>)" default. A title the user renamed is left alone."""
+    match = re.fullmatch(r"Apollo III(?: Standard)? \((.+)\)", entry.title or "")
+    wanted = f"Apollo III Standard ({entry.data['host']})"
     if match and entry.title != wanted:
         hass.config_entries.async_update_entry(entry, title=wanted)
 

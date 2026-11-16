@@ -1,9 +1,9 @@
 {
   "domain": "apollo_iii",
-  "name": "FutureBit Apollo III",
-  "version": "0.5.0",
-  "documentation": "https://github.com/DoubleDoc/apollo-iii-integration",
-  "issue_tracker": "https://github.com/DoubleDoc/apollo-iii-integration/issues",
+  "name": "FutureBit Apollo III Standard",
+  "version": "0.5.1",
+  "documentation": "https://github.com/DoubleDoc/ha-futurebit-apollo-iii-standard",
+  "issue_tracker": "https://github.com/DoubleDoc/ha-futurebit-apollo-iii-standard/issues",
   "config_flow": true,
   "iot_class": "local_polling",
   "requirements": [],
