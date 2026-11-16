@@ -68,3 +68,6 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 
 ### v0.4.5
 - `Tuning state` now shows **Adjusting** or **Holding** instead of the miner's phase label, which stays at `TUNE_STEPPING_UP` indefinitely in Super ECO while nothing changes. Adjusting = board voltage setpoint or chip frequency (`osc`) changed, or the tuner logged an action, in the last 10 minutes. The raw phase, DVFS state, voltage, frequency, average chip voltage, hitrate, last tuner action and last adjustment time are attributes. Unknown for the first 10 minutes after first install.
+
+### v0.4.6
+- New `Chip speed` (GH/s per chip, 30 s; 21 chips x chip speed = hashrate) in Sensors, and `Chip frequency (osc)` (raw value, unit undocumented) in Diagnostic.

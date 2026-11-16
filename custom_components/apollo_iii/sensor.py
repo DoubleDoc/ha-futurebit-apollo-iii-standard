@@ -63,6 +63,9 @@ SPECS = [
     ('pool_sent','Pool sent shares','miner',('pool','intervals','int_0','sharesSent'),1,None,None,None,True),
     ('solutions','Miner solutions','miner',('slots','int_0','solutions'),1,None,None,None,True),
     ('hardware_errors','Chip errors since miner start','miner',('master','intervals','int_0','errors'),1,None,None,SensorStateClass.TOTAL_INCREASING,True),
+    ('chip_speed_ghs','Chip speed','miner',('master','intervals','int_30','chipSpeed'),1,'GH/s',None,SensorStateClass.MEASUREMENT,False),
+    # Raw `osc` value: FutureBit doesn't document its unit, so none is claimed.
+    ('chip_freq_osc','Chip frequency (osc)','miner',('master','osc'),1,None,None,SensorStateClass.MEASUREMENT,True),
     ('hashrate_1h_ths','Hashrate (1 h average)','miner',('master','intervals','int_3600','bySol'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
     ('spi_errors','Master SPI errors','miner',('master','errorSpi'),1,None,None,None,True),
     ('active_boards','Active hashboards','miner',('master','boards'),1,None,None,None,True),

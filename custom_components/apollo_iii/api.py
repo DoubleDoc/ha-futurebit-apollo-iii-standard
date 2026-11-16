@@ -99,7 +99,7 @@ class ApolloAPI:
                 intervals {
                   int_0 { name interval bySol byDiff byPool byJobs
                     solutions errors errorRate chipSpeed chipRestarts }
-                  int_30 { bySol errorRate }
+                  int_30 { bySol errorRate chipSpeed }
                   int_300 { bySol errorRate }
                   int_3600 { bySol byPool errorRate chipSpeed } } }
               temperature { count min avr max }
