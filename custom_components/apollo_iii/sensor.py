@@ -135,6 +135,35 @@ class ApolloSensor(ApolloEntity, SensorEntity):
             return False
         return super().available
 
+class Efficiency1h(ApolloEntity, SensorEntity):
+    """J/TH from current hashboard power over the 1 h average hashrate.
+
+    Same formula as the Apollo dashboard (apolloui-v2 reselect/miner.js). The
+    miner reports no 1 h average power, so power is the current reading.
+    """
+    _attr_native_unit_of_measurement='J/TH'
+    _attr_state_class=SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision=2
+    _attr_icon='mdi:lightning-bolt-outline'
+
+    def __init__(self,entry,coordinator):
+        super().__init__(entry,coordinator,'efficiency_1h_j_th','Mining efficiency (1 h average)')
+
+    @property
+    def available(self):
+        return super().available and not (self.coordinator.data or {}).get('stale')
+
+    @property
+    def native_value(self):
+        stats=miner_stats(self.coordinator.data)
+        if not stats:
+            return None
+        power=at(stats,'master','boardsW')
+        ghs=at(stats,'master','intervals','int_3600','bySol')
+        if not isinstance(power,(int,float)) or not isinstance(ghs,(int,float)) or ghs <= 0:
+            return None
+        return round(power/ghs*1000,3)
+
 class DvfsSensor(ApolloEntity, SensorEntity):
     """Values the miner's DVFS tuner prints to its log every few seconds."""
     def __init__(self,entry,coordinator,key,name,field,unit=None,device_class=None,state_class=None,diagnostic=False,precision=None):
@@ -249,6 +278,7 @@ async def async_setup_entry(hass,entry,async_add_entities):
     entities=[ApolloSensor(entry,data[spec[2]],spec) for spec in SPECS]
     entities.extend(DiskPercent(entry,data['mcu'],i,label) for i,label in ((0,'Root'),(1,'Log')))
     entities.append(MiningEnergy(entry,data['miner']))
+    entities.append(Efficiency1h(entry,data['miner']))
     entities.extend(DvfsSensor(entry,data['logs'],*spec) for spec in DVFS_SPECS)
     from .general_errors import (MinerErrorCount, MinerLastError,
                                  MinerLastErrorTime, MinerLastErrorCategory)

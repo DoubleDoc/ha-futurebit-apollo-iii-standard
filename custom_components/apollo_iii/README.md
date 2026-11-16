@@ -64,3 +64,4 @@ Audit against the miner's API and FutureBit's dashboard code (apolloapi-v2 / apo
 ### v0.4.2
 - `Board voltage` shows 3 decimals (as the miner reports it) and moves from Diagnostic to Sensors.
 - `Fan PWM` moves from Diagnostic to Sensors (0.4.3).
+- New `Mining efficiency (1 h average)`: current hashboard power over the 1 h average hashrate, as the Apollo dashboard calculates it (0.4.4).
