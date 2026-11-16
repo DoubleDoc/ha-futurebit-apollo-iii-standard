@@ -1,0 +1,8 @@
+DOMAIN = "apollo_iii"
+DEFAULT_HOST = "192.168.216.76"
+DEFAULT_PORT = 5000
+MINER_INTERVAL = 15
+MCU_INTERVAL = 30
+SETTINGS_INTERVAL = 60
+MODES = ["super_eco", "eco", "balanced", "turbo", "custom"]
+LOG_INTERVAL = 30

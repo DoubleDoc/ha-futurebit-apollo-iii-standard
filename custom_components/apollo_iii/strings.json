@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Apollo III",
+        "data": {
+          "host": "Host IP",
+          "port": "GraphQL port",
+          "password": "Apollo dashboard password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not authenticate or connect to Apollo III"
+    }
+  }
+}
