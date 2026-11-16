@@ -32,6 +32,8 @@ async def validate(hass, host, port, password):
     await api.login()
     mcu = await api.get_mcu()
     mac = ApolloAPI.device_mac(mcu)
+    _LOGGER.debug("Validated Apollo III at %s:%s (hostname %s, MAC %s)",
+                  host, port, mcu.get("hostname"), "found" if mac else "missing")
     return (format_mac(mac) if mac else f"{host}:{port}"), mcu.get("hostname")
 
 
@@ -77,6 +79,7 @@ class ApolloFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     # ---- DHCP discovery ----------------------------------------------------
     async def async_step_dhcp(self, discovery_info):
+        _LOGGER.debug("DHCP discovery: %s at %s", discovery_info.hostname, discovery_info.ip)
         await self.async_set_unique_id(format_mac(discovery_info.macaddress))
         # Same miner at a new address: update it and reload, no questions.
         self._abort_if_unique_id_configured(updates={"host": discovery_info.ip})

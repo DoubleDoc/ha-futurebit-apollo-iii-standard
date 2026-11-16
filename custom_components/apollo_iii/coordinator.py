@@ -51,6 +51,7 @@ def miner_fetcher(api):
     """get_miner plus staleness: the stats file can stop updating while the
     miner service still reports online, which would freeze every value."""
     tracker = ChangeTracker()
+    was_stale = [None]
 
     async def fetch():
         data = await api.get_miner()
@@ -62,6 +63,19 @@ def miner_fetcher(api):
         data["stats_unchanged_s"] = round(age)
         data["stale"] = (not date or age > STATS_STALE_AFTER
                          or skew is None or skew > STATS_MAX_CLOCK_SKEW)
+        if data["stale"] != was_stale[0]:
+            if data["stale"]:
+                _LOGGER.debug("Miner stats are stale: date %s unchanged for %.0f s, %s s from HA's clock",
+                              date, age, None if skew is None else round(skew))
+            elif was_stale[0] is not None:
+                _LOGGER.debug("Miner stats are updating again")
+            was_stale[0] = data["stale"]
+        intervals = (first.get("master") or {}).get("intervals") or {}
+        _LOGGER.debug("Miner poll: service %s, %s GH/s (30 s), %s W, stats %s",
+                      (data.get("online") or {}).get("status"),
+                      (intervals.get("int_30") or {}).get("bySol"),
+                      (first.get("master") or {}).get("boardsW"),
+                      "stale" if data["stale"] else "fresh")
         return data
 
     return fetch
@@ -79,6 +93,11 @@ def log_fetcher(api):
         data["dvfs"] = dvfs
         data["dvfs_stale"] = (not dvfs.get("stamp")
                               or tracker.age(dvfs.get("stamp")) > LOG_STALE_AFTER)
+        _LOGGER.debug("Log snapshot: %d lines, %d entries; DVFS %s (target %s TH/s, %s V, phase %s)%s",
+                      len((data.get("content") or "").splitlines()), len(items),
+                      "stale" if data["dvfs_stale"] else "fresh", dvfs.get("target_ths"),
+                      dvfs.get("voltage"), dvfs.get("tune"),
+                      f"; tuner action: {dvfs['last_action']}" if dvfs.get("last_action") else "")
         return data
 
     return fetch
@@ -110,6 +129,8 @@ class ApolloCoordinator(DataUpdateCoordinator):
             raise ConfigEntryAuthFailed(str(err)) from err
         except ApolloAPIError as err:
             self._consecutive_failures += 1
+            _LOGGER.debug("%s update failed (%d in a row): %s", self.name,
+                          self._consecutive_failures, err)
             if self.retain_one_failure and self.data is not None and self._consecutive_failures == 1:
                 _LOGGER.warning("Transient MCU polling failure; retaining last sample: %s", err)
                 return self.data

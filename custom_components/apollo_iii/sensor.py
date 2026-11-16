@@ -1,4 +1,5 @@
 """Verified Apollo III telemetry and energy estimate."""
+import logging
 from datetime import datetime, timedelta, timezone
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, UnitOfElectricPotential, PERCENTAGE
@@ -8,6 +9,9 @@ from homeassistant.util import dt as dt_util
 from .entity import ApolloEntity, miner_stats, is_set
 from .general_errors import (MinerErrorCount, MinerLastError,
                              MinerLastErrorTime, MinerLastErrorCategory)
+
+_LOGGER = logging.getLogger(__name__)
+
 
 def at(data, *path):
     for key in path:
@@ -248,11 +252,13 @@ class TuningActivity(ApolloEntity, SensorEntity, RestoreEntity):
             if value is None:
                 continue
             if key in self._last and self._last[key] != value:
+                _LOGGER.debug("Tuner adjusted %s: %s -> %s", key, self._last[key], value)
                 self._last_change=now
             self._last[key]=value
         action=dvfs.get('last_action')
         if action and action != self._last_action:
             # The log snapshot spans only seconds, so an action in it is recent.
+            _LOGGER.debug("Tuner action: %s", action)
             self._last_change=now
             self._last_action=action
 

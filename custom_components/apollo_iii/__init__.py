@@ -39,7 +39,7 @@ def _migrate_unique_id(hass, entry, mcu):
     if any(e.unique_id == unique_id for e in hass.config_entries.async_entries(DOMAIN)):
         return
     hass.config_entries.async_update_entry(entry, unique_id=unique_id)
-    _LOGGER.info("Apollo III config entry now identified by MAC %s", unique_id)
+    _LOGGER.info("Apollo III config entry is now identified by its controller MAC address")
 
 
 def _sync_title(hass, entry):
@@ -49,6 +49,7 @@ def _sync_title(hass, entry):
     match = re.fullmatch(r"Apollo III(?: Standard)? \((.+)\)", entry.title or "")
     wanted = f"Apollo III Standard ({entry.data['host']})"
     if match and entry.title != wanted:
+        _LOGGER.debug("Updating entry title to %s", wanted)
         hass.config_entries.async_update_entry(entry, title=wanted)
 
 
@@ -68,8 +69,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ApolloConfigEntry) -> bo
         await api.login()
     except ApolloAuthError as err:
         raise ConfigEntryAuthFailed(str(err)) from err
-    except ApolloAPIError:
-        pass
+    except ApolloAPIError as err:
+        _LOGGER.debug("Miner not reachable at setup (%s); entities start unavailable", err)
     for coordinator in (miner, mcu, settings, logs):
         await coordinator.async_refresh()
 

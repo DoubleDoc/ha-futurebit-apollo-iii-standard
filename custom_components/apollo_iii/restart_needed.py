@@ -12,9 +12,12 @@ would ignore (for example the custom hashrate while in a preset mode) do not
 count. Pool and other Apollo UI-only settings are not tracked.
 """
 from datetime import datetime, timedelta
+import logging
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 from .entity import ApolloEntity, miner_stats, is_set
+
+_LOGGER = logging.getLogger(__name__)
 
 # A restored run within this many seconds of the current one is the same run.
 RUN_MATCH_TOLERANCE = 120
@@ -92,6 +95,7 @@ class RestartTracker:
             self.pending, self.baseline = True, baseline
             return
         self.applied, self.baseline, self.pending = saved, baseline, False
+        _LOGGER.debug("Running settings recorded (%s): %s", baseline, saved)
 
     def _miner_update(self):
         if not self.ready:
@@ -108,6 +112,8 @@ class RestartTracker:
                 if same_run:
                     self.applied, self.run_start = restored[0], restored[1]
                     self.baseline = "restored"
+                    _LOGGER.debug("Same miner run as before the HA restart; running settings restored: %s",
+                                  self.applied)
                 else:
                     # Unknown what this run loaded; assume the saved settings.
                     self.run_start = start
@@ -118,6 +124,7 @@ class RestartTracker:
                 # the settings were changed just before it.
                 self.run_start = start
                 self.pending, self.baseline = True, "observed miner restart"
+                _LOGGER.debug("Miner restart seen; recording its settings at the next settings read")
                 hass = getattr(self.settings, "hass", None)
                 if hass is not None:
                     hass.async_create_task(self.settings.async_request_refresh())
@@ -130,6 +137,13 @@ class RestartTracker:
         self._notify()
 
     def _notify(self):
+        needed = self.needed
+        if needed != getattr(self, "_was_needed", None):
+            if needed:
+                _LOGGER.debug("Restart needed: %s", "; ".join(self.changes))
+            elif getattr(self, "_was_needed", None):
+                _LOGGER.debug("Restart no longer needed")
+            self._was_needed = needed
         if self.entity is not None and self.entity.hass is not None:
             self.entity.async_write_ha_state()
 

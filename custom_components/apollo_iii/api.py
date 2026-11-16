@@ -2,9 +2,17 @@
 import asyncio
 import time
 import logging
+import re
 from aiohttp import ClientError, ClientSession
 
 _LOGGER = logging.getLogger(__name__)
+_OPERATION = re.compile(r"\{\s*(\w+)\s*\{\s*(\w+)")
+
+
+def _operation(query):
+    """Short label for a query, for logs: 'Miner.stats', 'Settings.update'."""
+    match = _OPERATION.search(query)
+    return f"{match.group(1)}.{match.group(2)}" if match else "query"
 
 class ApolloAPIError(Exception):
     """API or GraphQL failure."""
@@ -22,10 +30,12 @@ class ApolloAPI:
         # Monotonic time of the last setting change or miner command sent from HA.
         self.last_write = None
 
-    async def _request(self, query, variables=None, *, auth=True, retry=True, read_only=True):
+    async def _request(self, query, variables=None, *, auth=True, retry=True, read_only=True, op=None):
         if auth and not self.token:
             await self.login()
         headers = {"Authorization": f"Bearer {self.token}"} if auth else {}
+        operation = op or _operation(query)
+        started = time.monotonic()
         try:
             async with self.session.post(
                 self.url, json={"query": query, "variables": variables or {}},
@@ -37,10 +47,14 @@ class ApolloAPI:
             # Retry one transient transport failure; never retry a GraphQL
             # application error or a command whose effect is uncertain.
             if retry and read_only:
+                _LOGGER.debug("%s to %s failed (%s); retrying once", operation, self.url, err)
                 await asyncio.sleep(0.5)
-                return await self._request(query, variables, auth=auth, retry=False, read_only=read_only)
+                return await self._request(query, variables, auth=auth, retry=False,
+                                           read_only=read_only, op=op)
+            _LOGGER.debug("%s to %s failed: %s", operation, self.url, err)
             raise ApolloAPIError(f"GraphQL transport error: {err}") from err
         except ValueError as err:
+            _LOGGER.debug("%s returned a response that is not JSON: %s", operation, err)
             raise ApolloAPIError(f"GraphQL response error: {err}") from err
         errors = payload.get("errors") or []
         if errors:
@@ -49,25 +63,29 @@ class ApolloAPI:
                 (e.get("extensions") or {}).get("code") == "UNAUTHENTICATED" for e in errors)
             if unauthenticated and auth and retry:
                 # Token expired: log in again once.
+                _LOGGER.debug("%s: token rejected; logging in again", operation)
                 self.token = None
                 return await self._request(query, variables, auth=True, retry=False,
-                                           read_only=read_only)
+                                           read_only=read_only, op=op)
+            _LOGGER.debug("%s returned GraphQL errors: %s", operation, message)
             if unauthenticated:
                 raise ApolloAuthError(message)
             raise ApolloAPIError(message)
+        _LOGGER.debug("%s took %.2f s", operation, time.monotonic() - started)
         return payload.get("data") or {}
 
     async def login(self):
         async with self._lock:
             if self.token:
                 return
+            _LOGGER.debug("Logging in to %s", self.url)
             data = await self._request(
                 """query($password:String!) {
                   Auth { login(input:{password:$password}) {
                     result { accessToken } error { message }
                   }}
                 }""",
-                {"password": self.password}, auth=False
+                {"password": self.password}, auth=False, op="Auth.login",
             )
             response = data.get("Auth", {}).get("login") or {}
             if response.get("error"):
@@ -75,6 +93,7 @@ class ApolloAPI:
             self.token = (response.get("result") or {}).get("accessToken")
             if not self.token:
                 raise ApolloAuthError("Login returned no access token")
+            _LOGGER.debug("Logged in")
 
     @staticmethod
     def unwrap(data, root, field):
@@ -104,7 +123,7 @@ class ApolloAPI:
             disks { total used mountPoint }
             network { name address mac }
           }} error { message } }}
-        }""")
+        }""", op="Mcu.stats")
         return self.unwrap(data, "Mcu", "stats").get("stats") or {}
 
 
@@ -132,7 +151,7 @@ class ApolloAPI:
                 wattPerGHs osc } }
             }} error { message }}
           }
-        }""", auth=False)
+        }""", auth=False, op="Miner.stats")
         online = self.unwrap(data, "Miner", "online").get("online") or {}
         stats = self.unwrap(data, "Miner", "stats").get("stats") or []
         return {"online": online, "stats": stats}
@@ -147,7 +166,7 @@ class ApolloAPI:
             result { data { id serviceName status requestedStatus requestedAt lastChecked }}
             error { message }
           }}
-        }""")
+        }""", op="Settings.read")
         return {
             "settings": self.unwrap(data, "Settings", "read").get("settings") or {},
             "services": self.unwrap(data, "Services", "stats").get("data") or [],
@@ -155,13 +174,14 @@ class ApolloAPI:
 
     async def update_settings(self, changes):
         self.last_write = time.monotonic()
+        _LOGGER.debug("Saving settings %s (the miner loads them at its next start)", changes)
         data = await self._request(
             """query($input:SettingsUpdateInput!) {
               Settings { update(input:$input) {
                 result { settings { minerMode minerHashrate fanTemp fanPwm } }
                 error { message }
               }}
-            }""", {"input": changes}, read_only=False
+            }""", {"input": changes}, read_only=False, op="Settings.update",
         )
         return self.unwrap(data, "Settings", "update")
 
@@ -169,8 +189,10 @@ class ApolloAPI:
         if command not in ("start", "stop", "restart"):
             raise ValueError("Invalid miner command")
         self.last_write = time.monotonic()
+        _LOGGER.debug("Sending miner command: %s", command)
         data = await self._request(
-            f"{{ Miner {{ {command} {{ error {{ message }} }} }} }}", read_only=False
+            f"{{ Miner {{ {command} {{ error {{ message }} }} }} }}", read_only=False,
+            op=f"Miner.{command}"
         )
         response = (data.get("Miner") or {}).get(command) or {}
         if response.get("error"):
@@ -186,5 +208,6 @@ class ApolloAPI:
               }}
             }""",
             {"input": {"logType": "MINER", "lines": 1000}},
+            op="Logs.read",
         )
         return self.unwrap(data, "Logs", "read")

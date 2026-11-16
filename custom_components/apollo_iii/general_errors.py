@@ -18,6 +18,7 @@ within FAULT_INTENTIONAL_WINDOW, is not a fault.
 """
 from collections import deque
 from datetime import datetime, timedelta
+import logging
 import re
 import time
 from homeassistant.components.sensor import SensorEntity
@@ -40,6 +41,7 @@ RULES = (
 GENERIC = re.compile(r"\b(?:fatal|panic|exception|error|failed|failure)\b", re.I)
 EXCLUDE = re.compile(r"(?:\b0\s+errors?\b|\berror\s*(?:rate|count|code)\s*[:=]\s*0\b|\bno\s+errors?\b)", re.I)
 MAX_KEYS = 80
+_LOGGER = logging.getLogger(__name__)
 
 # rule: (category, fatal, seconds the condition must hold before it counts, text)
 CONDITIONS = {
@@ -150,6 +152,8 @@ class GeneralErrorState:
 
     def _incident(self, key, session, category, fatal, text, timestamp):
         if not self._remember(key): return
+        _LOGGER.debug("Incident #%d counted (%s%s): %s", self.count + 1, category,
+                      ", fatal" if fatal else "", text)
         self.count += 1
         self.last_text = text[:255]
         self.last_time = timestamp
@@ -217,6 +221,9 @@ class GeneralErrorState:
 
             # Event: miner restarted (uptime went backwards) without a request.
             if self.prev_uptime is not None and uptime + 30 < self.prev_uptime:
+                _LOGGER.debug("Miner restart seen: uptime %.0f s -> %.0f s (%s)", self.prev_uptime,
+                              uptime, "requested recently, not a fault" if self._intentional()
+                              else "not requested")
                 if not self._intentional():
                     self._incident(f"{run}|process|restart", run, "process", True,
                                    "Miner restarted unexpectedly", now_text)
@@ -270,11 +277,16 @@ class GeneralErrorState:
         now = time.monotonic()
         for rule in list(self.cond_since):
             if rule not in conditions:
+                _LOGGER.debug("Condition %s cleared after %.0f s", rule, now - self.cond_since[rule])
                 del self.cond_since[rule]
         self.cond_counted &= conditions
         for rule in conditions:
-            since = self.cond_since.setdefault(rule, now)
             category, fatal, hold, text = CONDITIONS[rule]
+            if rule not in self.cond_since:
+                _LOGGER.debug("Condition %s started%s", rule,
+                              f"; counts if it lasts {hold} s" if rule not in self.cond_counted
+                              else " (already counted before HA restarted)")
+            since = self.cond_since.setdefault(rule, now)
             if rule in self.cond_counted or now - since < hold:
                 continue
             self.cond_counted.add(rule)
@@ -298,6 +310,8 @@ class GeneralErrorState:
         self._check_stats()
         stats = miner_stats(self.miner.data)
         if stats and (_hashrate_ghs(stats) or 0) > 0:
+            if self.latched:
+                _LOGGER.debug("Fault latch cleared: miner is hashing at %s GH/s", _hashrate_ghs(stats))
             self.latched = False
         for entity in self.entities:
             if entity.hass is not None: entity.async_write_ha_state()
