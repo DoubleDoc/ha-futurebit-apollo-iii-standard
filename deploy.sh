@@ -1,13 +1,15 @@
 #!/bin/sh
-# Copy the integration from this repo into the live Home Assistant config.
-# Backs up the live copy first. Does not restart HA: Python and manifest
-# changes take effect only after a restart (confirm before restarting).
+# Copy the integration from this repo into a Home Assistant config folder for
+# testing. Backs up the existing copy first. Does not restart Home Assistant:
+# Python and manifest changes take effect only after a restart.
+#   HA_CONFIG   Home Assistant config folder (default /config)
+#   BACKUP_DIR  where backups go (default $HOME/apollo-iii-backups)
 set -eu
 
 REPO_DIR=$(cd "$(dirname "$0")" && pwd)
 SRC="$REPO_DIR/custom_components/apollo_iii"
-DEST=/config/custom_components/apollo_iii
-BACKUP_ROOT=/data/home/apollo-iii-backups
+DEST="${HA_CONFIG:-/config}/custom_components/apollo_iii"
+BACKUP_ROOT="${BACKUP_DIR:-$HOME/apollo-iii-backups}"
 
 [ -d "$SRC" ] || { echo "Missing $SRC" >&2; exit 1; }
 
