@@ -105,12 +105,15 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 - **"The miner rejected the password":** use the password you log in to the Apollo web dashboard with.
 - **Entities unavailable:** the miner's stats have not updated for a minute, or Home Assistant cannot reach it. `Miner online` has `stats_stale` and `service_status` attributes to tell which.
 - **Reporting a problem:** open an issue and attach the diagnostics file (device page > three dots > **Download diagnostics**). Passwords, MAC and IP addresses and the pool username are removed from it.
-- **Debug logs:** add this to `configuration.yaml` and restart:
+- **Debug logs:** go to **Settings > Devices & services > FutureBit Apollo III Standard**, open the menu (three dots) and choose **Enable debug logging**. Reproduce the problem, then choose **Disable debug logging**; Home Assistant downloads the log file. No restart is needed.
+  To keep debug logging on across restarts instead, add this to `configuration.yaml` (merge it into an existing `logger:` section if you have one) and restart:
   ```yaml
   logger:
+    default: warning
     logs:
       custom_components.apollo_iii: debug
   ```
+  Keep the `default:` line: without it, Home Assistant logs everything at debug level.
 
 ## Authorship
 
