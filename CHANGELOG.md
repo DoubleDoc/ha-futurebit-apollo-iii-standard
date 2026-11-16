@@ -2,6 +2,11 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.2
+- Repository published. HACS validation now runs with no ignored checks (brand images are found in `custom_components/apollo_iii/brand/`).
+- README: authorship statement.
+- No changes to the integration's behavior.
+
 ## 1.0.1
 - Diagnostics: the miner's IP address is also removed from the entry title.
 
