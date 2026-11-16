@@ -24,6 +24,3 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Brand images ship in custom_components/apollo_iii/brand/ (HA 2026.3+),
-          # not in the home-assistant/brands repository.
-          ignore: brands
