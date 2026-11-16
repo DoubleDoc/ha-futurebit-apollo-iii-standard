@@ -29,7 +29,9 @@ async def async_get_config_entry_diagnostics(
     tracker = data.restart_tracker
     return {
         "entry": async_redact_data(
-            {"title": entry.title, "data": dict(entry.data), "unique_id": entry.unique_id,
+            # The default title contains the host.
+            {"title": entry.title.replace(entry.data.get("host") or "\0", "**REDACTED**"),
+             "data": dict(entry.data), "unique_id": entry.unique_id,
              "version": entry.version}, TO_REDACT),
         "coordinators": {
             name: {

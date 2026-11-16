@@ -111,6 +111,7 @@ async def test_diagnostics_redacts_secrets(hass: HomeAssistant, hass_client, fak
     text = str(diag)
     assert PASSWORD not in text
     assert MAC not in text
+    assert HOST not in text  # including the default title
     assert "bc1q" not in text
     assert diag["entry"]["data"]["password"] == "**REDACTED**"
     assert diag["coordinators"]["miner"]["last_update_success"] is True

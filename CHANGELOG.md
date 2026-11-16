@@ -2,6 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.1
+- Diagnostics: the miner's IP address is also removed from the entry title.
+
 ## 1.0.0
 First stable release.
 - **Diagnostics download** (device page > Download diagnostics), with the password, MACs, IP addresses and pool username redacted.
