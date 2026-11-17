@@ -2,7 +2,7 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
-## Unreleased
+## 1.0.5
 - Setup: a second setup for a miner that already has one open now shows a message instead of the raw reason `already_in_progress`.
 - `Hashboard energy estimated` is renamed `Hashboard energy (estimated)` (display name only; the entity ID is unchanged).
 - README: the debug logging YAML no longer sets `default:`; Home Assistant changes the overall log level only when `default:` is written, so the old advice could override a user's existing default.
