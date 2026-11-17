@@ -2,7 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
-## Unreleased (documentation only)
+## Unreleased
+- Setup: a second setup for a miner that already has one open now shows a message instead of the raw reason `already_in_progress`.
+- `Hashboard energy estimated` is renamed `Hashboard energy (estimated)` (display name only; the entity ID is unchanged).
 - README: the debug logging YAML no longer sets `default:`; Home Assistant changes the overall log level only when `default:` is written, so the old advice could override a user's existing default.
 - README: discovery updates a moved miner's IP automatically only on a wired connection (on Wi-Fi it asks for the password first), and the pool limitation is worded accurately (`Pool host` shows the pool in use).
 - DEVELOPMENT.md: tests need Python 3.14.2 or newer; hashrate field sources, the module list (`const.py`, `entity.py`) and CI triggers corrected.

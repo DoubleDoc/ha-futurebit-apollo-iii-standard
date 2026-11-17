@@ -57,6 +57,7 @@
     },
     "abort": {
       "already_configured": "This Apollo III Standard is already set up.",
+      "already_in_progress": "Setup for this Apollo III Standard is already in progress.",
       "reauth_successful": "Password updated.",
       "reconfigure_successful": "Apollo III Standard settings updated.",
       "wrong_device": "That address belongs to a different Apollo III Standard than this entry."
@@ -129,7 +130,7 @@
         "name": "Chip errors since miner start"
       },
       "hashboard_energy": {
-        "name": "Hashboard energy estimated"
+        "name": "Hashboard energy (estimated)"
       },
       "hashboard_error_rate": {
         "name": "Chip error rate (5 min)"

@@ -67,7 +67,7 @@ Unofficial and not affiliated with FutureBit.
 | Group | Entities |
 |---|---|
 | Performance | Hashrate, Hashrate (1 h average), Hashrate target, Hashrate target setting, Chip speed, Chip frequency (osc), Mining efficiency, Mining efficiency (1 h average) |
-| Power | Hashboard power, Hashboard current, Board voltage, Hashboard energy estimated |
+| Power | Hashboard power, Hashboard current, Board voltage, Hashboard energy (estimated) |
 | Thermal | Hashboard temperature, Miner average temperature, Controller temperature, Miner fan speed, Fan PWM, Fan control setting |
 | Pool | Pool accepted shares, Pool rejected shares |
 | Health | Miner online, Miner fault, Restart needed, Miner error count, Miner last error, Miner last error time, Miner last error category, Chip error rate (5 min), Miner service status, CPU usage |
