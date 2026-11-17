@@ -55,6 +55,8 @@ Measured on 2026-11-16 on one Apollo III Standard (21 chips, Web OS v2.1.3) at o
 - The tuner phase read `TUNE_STEPPING_UP` and the DVFS state `NORMAL` in every mode.
 - Turbo runs the fan at 100 % PWM, so it has no cooling headroom.
 
+![Hashrate and power from miner restart to stable, for each power mode](docs/power-modes.svg)
+
 ### Modules
 | File | Role |
 |---|---|
