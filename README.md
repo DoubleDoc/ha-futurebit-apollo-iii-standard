@@ -56,7 +56,7 @@ Unofficial and not affiliated with FutureBit.
 |---|---|
 | Mining enabled (switch) | Starts or stops mining. Takes effect immediately. |
 | Start / Stop / Restart miner (buttons) | Restart also applies saved settings. |
-| Performance mode (select) | Super ECO, ECO, Balanced, Turbo, Custom. |
+| Performance mode (select) | Super ECO, ECO, Balanced, Turbo, Custom. See the [measured power modes](DEVELOPMENT.md#measured-power-modes) for each preset's hashrate, power and temperatures. |
 | Fan mode (select) | Automatic, Temperature target, or Fixed PWM. |
 | Custom mode target hashrate (number) | 5–20 TH/s. Used only in Custom mode. |
 | Fan temperature target / Fan PWM target (numbers) | 40–80 °C / 10–100 %. Setting a PWM switches the fan to Fixed PWM. |
@@ -93,7 +93,7 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 
 ## Known limitations
 
-- **Preset hashrate targets** (Super ECO, ECO and so on) are not published by FutureBit. `Hashrate target` shows the target the miner itself reports while running.
+- **Preset hashrate targets** (Super ECO, ECO and so on) are not published by FutureBit. `Hashrate target` shows the target the miner itself reports while running; the values measured on one miner are in [Measured power modes](DEVELOPMENT.md#measured-power-modes).
 - **Miner uptime can read too long.** The controller has no real-time clock, so after a reboot its clock jumps forward when it syncs, and the miner's uptime includes that jump. The Apollo dashboard shows the same value.
 - **Apollo III Full Package** (with the Bitcoin node) and the older USB Apollo I/II are not supported.
 - **Pool configuration** (URL, worker, password) can't be viewed or changed here and isn't tracked by `Restart needed`. `Pool host` shows only the pool currently in use.

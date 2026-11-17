@@ -3,7 +3,7 @@
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
 ## Unreleased
-- DEVELOPMENT.md: measured chip frequency, hashrate, power, efficiency, temperatures, tuning values and start-up times for all four power modes.
+- DEVELOPMENT.md: measured chip frequency, hashrate, power, efficiency, temperatures, tuning values and start-up times for all four power modes, linked from the README.
 
 ## 1.0.7
 - Fault monitor: a miner restart or power-mode change no longer counts as `High chip error rate`. The chips throw many errors while the miner tunes after a start, which kept the 5-minute error rate above 5 % for several minutes. The check now waits 5 minutes after a start, like the hashrate checks, and counts only while the 30-second rate is also above 5 %.
