@@ -2,6 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## Unreleased
+- README: installation steps for the Home Assistant 2026.11+ Marketplace and for HACS on 2026.3 to 2026.10, including the restart and the step to add the integration.
+
 ## 1.0.8
 - Documentation only; the integration's behavior is unchanged.
 - DEVELOPMENT.md: measured chip frequency, hashrate, power, efficiency, temperatures, tuning values and start-up times for all four power modes, with start-up timings and charts, linked from the README.

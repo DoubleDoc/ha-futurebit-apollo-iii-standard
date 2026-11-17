@@ -22,14 +22,29 @@ Unofficial and not affiliated with FutureBit.
 
 ## Installation
 
-### HACS (recommended)
+How you install depends on your Home Assistant version. Home Assistant 2026.11 replaced HACS with the built-in **Marketplace**; existing HACS installs and custom repositories move over automatically when you update.
+
+### Home Assistant 2026.11 and later (Marketplace)
+1. Go to **Settings > Marketplace**. The first time, accept the warning about community projects.
+2. Select **Add from link** (top right), enter `DoubleDoc/ha-futurebit-apollo-iii-standard`, and select **Add**. Adding a custom repository needs a GitHub connection; follow the prompt to sign in with a code on GitHub.
+3. Open **FutureBit Apollo III Standard** under **Custom repositories** and select **Install**. No restart is needed.
+4. The setup form opens. If you close it, add the integration later as described under [Configuration](#configuration).
+
+Updates appear in the Marketplace and as an update entity. After updating, restart Home Assistant; a repair offers to do it for you.
+
+### Home Assistant 2026.3 to 2026.10 (HACS)
 1. In HACS, open the menu (three dots) > **Custom repositories**.
 2. Add `https://github.com/DoubleDoc/ha-futurebit-apollo-iii-standard` with type **Integration**.
-3. Search for **FutureBit Apollo III Standard**, install it, and restart Home Assistant.
+3. Search HACS for **FutureBit Apollo III Standard**, open it and select **Download**.
+4. Restart Home Assistant.
+5. Add the integration as described under [Configuration](#configuration).
+
+Updates appear in HACS and as an update entity; restart Home Assistant after updating.
 
 ### Manual
 1. Copy the `custom_components/apollo_iii` folder from this repository into your Home Assistant `config/custom_components/` folder.
 2. Restart Home Assistant.
+3. Add the integration as described under [Configuration](#configuration).
 
 ## Configuration
 
