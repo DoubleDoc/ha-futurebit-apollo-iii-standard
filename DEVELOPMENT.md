@@ -33,7 +33,7 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 - **The MINER log is a screen snapshot,** not a file: `screen -X hardcopy` of the miner's terminal, about 25 lines, hard-wrapped at 80 columns. `logparse.py` joins wrapped lines. It scrolls in seconds, so the fault monitor uses the stats, not the log, as its main signal.
 - **DVFS log lines** (every ~3 s) are the only source of the active hashrate target, board voltage setpoint, fan PWM and tuner phase. The phase label stays at `TUNE_STEPPING_UP` indefinitely in Super ECO, so `Tuning state` reports observed changes instead.
 - **Slot-level `errors` / `errorRate` are always 0** on the Apollo III. Chip errors are in `master.intervals.int_*`.
-- **Current hashrate** = `master.intervals.int_30.bySol` (equal to `slots.int_0.ghs`); 1 h average = `int_3600.bySol`. `int_0` is the whole miner run.
+- **Hashrate fields:** the `Hashrate` sensor reads `slots.int_0.ghs`; the fault monitor and the debug log use `master.intervals.int_30.bySol` (falling back to `ghs`). The two carry the same value. The 1 h average is `int_3600.bySol`. In `master.intervals`, `int_0` covers the whole miner run.
 - **Settings apply only at miner start.** `Settings.update` rewrites the config file; the miner reads it once. `configurator.js` uses `minerHashrate` only in `custom` mode, spells Super ECO `supereco` on the command line, treats 0 or null fan values as unset, and lets a fixed PWM override the temperature target. `restart_needed.py` mirrors that logic.
 - **No RTC on the controller:** after a reboot, NTP jumps the clock forward and `master.upTime` includes the jump.
 - **Stats staleness:** `stats.date` updates about every 10 s; the dashboard treats more than 1 minute as inactive.
@@ -43,6 +43,7 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 | File | Role |
 |---|---|
 | `__init__.py` | Setup, unique-ID migration, title sync. |
+| `const.py` | Poll intervals, fault thresholds and other constants. |
 | `coordinator.py` | Coordinators, stats/log staleness, `ApolloData` (`entry.runtime_data`). |
 | `api.py` | GraphQL client and queries. |
 | `diagnostics.py` | Diagnostics download, with credentials, MACs, addresses and the pool user redacted. |
@@ -50,6 +51,7 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 | `logparse.py` | Screen-snapshot parsing and DVFS values. |
 | `general_errors.py` | Fault monitor: stats conditions, events, log matching, incident counter. |
 | `restart_needed.py` | Tracks the settings the running miner loaded. |
+| `entity.py` | Base entity: unique IDs, translation keys, device info. |
 | `sensor.py`, `binary_sensor.py`, `select.py`, `number.py`, `switch.py`, `button.py` | Entity platforms. |
 
 ## Local development
@@ -75,17 +77,17 @@ Entities have no hardcoded names: each sets a translation key (its unique-ID key
 
 ## Testing
 
-The suite uses [pytest-homeassistant-custom-component](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component), pinned in `requirements_test.txt` to the Home Assistant version it targets.
+The suite uses [pytest-homeassistant-custom-component](https://github.com/MatthewFlamm/pytest-homeassistant-custom-component), pinned in `requirements_test.txt` to the Home Assistant version it targets. That version needs **Python 3.14.2 or newer**; with an older Python, `pip` cannot find the pinned package.
 
 ```sh
-python3 -m venv .venv && . .venv/bin/activate
+python3.14 -m venv .venv && . .venv/bin/activate
 pip install -r requirements_test.txt
 pytest
 ```
 
 `tests/conftest.py` provides `FakeMiner`, which answers the integration's GraphQL queries from `tests/fixtures/` and records settings updates and miner commands. Use it to simulate a wrong password (`fake_miner.password`), an unreachable miner (`fake_miner.unreachable`), or changed stats. To refresh the fixtures from a real miner, capture the four queries and replace every MAC, IP address and pool username before committing.
 
-CI runs the tests, hassfest and the HACS validator on every push.
+CI runs the tests, hassfest and the HACS validator on every push and pull request; the validators also run weekly (Mondays, 06:00 UTC).
 
 ## Releasing
 
