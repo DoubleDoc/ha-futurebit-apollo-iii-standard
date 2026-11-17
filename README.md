@@ -46,7 +46,7 @@ Unofficial and not affiliated with FutureBit.
 **Later changes:**
 - **New IP, port or password:** open the integration's menu (three dots) > **Reconfigure**. Leave the password blank to keep it.
 - **Password changed on the miner:** Home Assistant shows a re-authentication prompt. Enter the new password.
-- **Miner moved to a new IP:** discovery updates it automatically. Each miner is identified by its controller's MAC address, so it is never added twice.
+- **Miner moved to a new IP:** on a wired connection, discovery updates it automatically. On Wi-Fi, Home Assistant shows the miner as discovered; enter the password and the existing entry is updated. Each miner is identified by its controller's wired MAC address, so it is never added twice.
 - **More than one miner:** add each one the same way. Rename the new device (for example "Garage Apollo") so its entity names are easy to tell apart.
 
 ## Entities
@@ -97,7 +97,7 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 - **Miner uptime can read too long.** The controller has no real-time clock, so after a reboot its clock jumps forward when it syncs, and the miner's uptime includes that jump. The Apollo dashboard shows the same value.
 - **Chip frequency (osc)** has no unit, because FutureBit does not document what the value means.
 - **Apollo III Full Package** (with the Bitcoin node) and the older USB Apollo I/II are not supported.
-- **Pool settings** are not shown or tracked by `Restart needed`.
+- **Pool configuration** (URL, worker, password) can't be viewed or changed here and isn't tracked by `Restart needed`. `Pool host` shows only the pool currently in use.
 
 ## Troubleshooting
 
