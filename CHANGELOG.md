@@ -2,7 +2,8 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
-## Unreleased
+## 1.0.10
+- Documentation only; the integration's behavior is unchanged.
 - README: the health monitoring section names the `no ASIC is detected` error and how it is caught.
 
 ## 1.0.9
