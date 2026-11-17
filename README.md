@@ -1,6 +1,6 @@
 # FutureBit Apollo III Standard for Home Assistant
 
-A Home Assistant custom integration for the **FutureBit Apollo III Standard**, the miner-only Apollo III model (no Bitcoin node). It reads the miner's local API and gives you its hashrate, power, temperatures, pool shares and health in Home Assistant, plus controls for mining, power mode and fans.
+A Home Assistant custom integration for the **FutureBit Apollo III Standard**, the miner-only Apollo III model (no Bitcoin node). On the Apollo III Full Package it covers the miner side only; see [Supported models](#supported-models). It reads the miner's local API and gives you its hashrate, power, temperatures, pool shares and health in Home Assistant, plus controls for mining, power mode and fans.
 
 Unofficial and not affiliated with FutureBit.
 
@@ -17,8 +17,16 @@ Unofficial and not affiliated with FutureBit.
 
 ## Requirements
 
-- A FutureBit Apollo III **Standard** on your network, with its Apollo web dashboard set up (you need the dashboard password). Tested with Web OS v2.1.3.
+- A FutureBit Apollo III **Standard** (or the miner side of a Full Package, see below) on your network, with its Apollo web dashboard set up (you need the dashboard password). Tested with Web OS v2.1.3.
 - Home Assistant 2026.3 or newer.
+
+## Supported models
+
+| Model | Support |
+|---|---|
+| **Apollo III Standard** (miner only) | Full support. This is the model the integration is built and tested on. |
+| **Apollo III Full Package** (miner plus Bitcoin node) | Partial: the miner side only. The Full Package runs the same Apollo Web OS and miner API, so mining data, health monitoring and the miner controls apply. The Bitcoin node, its sync and peers, the built-in solo pool and the other node software are not shown or controlled. Not yet tested on a Full Package; reports are welcome. |
+| **Apollo I / Apollo II** (USB miners) | Not supported. They use different miner software and settings (voltage and frequency instead of a hashrate target and fan modes). |
 
 ## Installation
 
@@ -110,7 +118,7 @@ Error messages that appear in the miner's log are also counted. A `no ASIC is de
 
 - **Preset hashrate targets** (Super ECO, ECO and so on) are not published by FutureBit. `Hashrate target` shows the target the miner itself reports while running; the values measured on one miner are in [Measured power modes](DEVELOPMENT.md#measured-power-modes).
 - **Miner uptime can read too long.** The controller has no real-time clock, so after a reboot its clock jumps forward when it syncs, and the miner's uptime includes that jump. The Apollo dashboard shows the same value.
-- **Apollo III Full Package** (with the Bitcoin node) and the older USB Apollo I/II are not supported.
+- **Apollo III Full Package:** only the miner is covered; the Bitcoin node and pool software are not. **Apollo I/II:** not supported. See [Supported models](#supported-models).
 - **Pool configuration** (URL, worker, password) can't be viewed or changed here and isn't tracked by `Restart needed`. `Pool host` shows only the pool currently in use.
 
 ## Troubleshooting

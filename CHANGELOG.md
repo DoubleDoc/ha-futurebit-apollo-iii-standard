@@ -2,6 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## Unreleased
+- README: new Supported models section. The Apollo III Full Package is partly supported (the miner side; not the Bitcoin node or pool software); the USB Apollo I/II are not supported.
+
 ## 1.0.10
 - Documentation only; the integration's behavior is unchanged.
 - README: the health monitoring section names the `no ASIC is detected` error and how it is caught.
