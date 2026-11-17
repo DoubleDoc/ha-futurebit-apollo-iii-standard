@@ -50,6 +50,24 @@ Measured on 2026-11-16 on one Apollo III Standard (21 chips, Web OS v2.1.3) at o
 | Balanced | 767 MHz | 15.19 TH/s | 243 W | 16.0 J/TH | 73 °C | 6.64 V | 47 % | 241 s | 82 °C | 275 W |
 | Turbo | 921 MHz | 18.23 TH/s | 340 W | 18.6 J/TH | 81 °C | 7.12 V | 100 % | 300 s | 90 °C | 369 W |
 
+More steady-state readings (same samples):
+
+| Mode | Chip speed | Hashes per clock | Avg chip temp | Board temp | Chip voltage (mean) | Hit rate | Fan | Chip errors (30 s) |
+|---|---|---|---|---|---|---|---|---|
+| Super ECO | 382 GH/s | 933 | 54.1 °C | 52.8 °C | 0.248 V | 0.995 | 1,538 rpm | 1.11 % |
+| Eco | 577 GH/s | 939 | 57.6 °C | 55.7 °C | 0.278 V | 0.999 | 2,456 rpm | 0.62 % |
+| Balanced | 723 GH/s | 943 | 63.3 °C | 60.3 °C | 0.298 V | 0.999 | 3,637 rpm | 0.62 % |
+| Turbo | 868 GH/s | 943 | 69.6 °C | 64.5 °C | 0.315 V | 1.000 | 5,893 rpm | 0.60 % |
+
+Start-up, as miner uptime (fault monitor of integration v1.0.7):
+
+| Mode | First hashes | Chip errors under 5 % (30 s) | Stable | Start-up errors cleared (5 min) | Peak chip errors | Fault raised |
+|---|---|---|---|---|---|---|
+| Super ECO | 50 s | 190 s | 190 s | 370 s | 66.6 % | no |
+| Eco | 40 s | 210 s | 220 s | 400 s | 92.9 % | no |
+| Balanced | 81 s | 171 s | 241 s | 401 s | 65.9 % | no |
+| Turbo | 40 s | 280 s | 300 s | 420 s | 82.7 % | no |
+
 - "Stable at" is miner uptime after which every sample stayed within 5 % of the steady hashrate with the 30-second chip error rate under 5 %. Peak values cover the run from restart to the end of sampling.
 - Every start has a burst of chip errors (peaks of 66–93 %). The 30-second rate falls under 5 % within 171–280 s, but the 5-minute rate keeps the burst until 370–420 s. That is why the `high_error_rate` check waits out the startup grace and also requires the 30-second rate.
 - The tuner phase read `TUNE_STEPPING_UP` and the DVFS state `NORMAL` in every mode.
