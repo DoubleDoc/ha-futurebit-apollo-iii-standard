@@ -2,13 +2,18 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## Unreleased (documentation only)
+- README: the debug logging YAML no longer sets `default:`; Home Assistant changes the overall log level only when `default:` is written, so the old advice could override a user's existing default.
+- README: discovery updates a moved miner's IP automatically only on a wired connection (on Wi-Fi it asks for the password first), and the pool limitation is worded accurately (`Pool host` shows the pool in use).
+- DEVELOPMENT.md: tests need Python 3.14.2 or newer; hashrate field sources, the module list (`const.py`, `entity.py`) and CI triggers corrected.
+
 ## 1.0.4
 - Debug logging: routine miner polls are no longer timed twice (the coordinator already logs their duration).
 
 ## 1.0.3
 - **Debug logging** for troubleshooting (integration page > Enable debug logging): logins, token refresh, setting changes, commands and slow API calls with their duration, a one-line summary of every miner poll and log snapshot (DVFS target, voltage, phase, tuner actions), stats going stale and recovering, fault-monitor decisions (condition started, counted, cleared; why a restart did or did not count), Restart needed snapshots and pending changes, tuner adjustments, and settings and commands sent from Home Assistant.
 - Passwords, tokens, MAC addresses and the pool username are never logged.
-- The README's debug logging instructions are corrected.
+- The README's debug logging instructions are rewritten (the YAML example was corrected again after 1.0.4).
 - README: tested with Apollo Web OS v2.1.3.
 
 ## 1.0.2
@@ -37,7 +42,7 @@ First stable release.
 ## 0.5.0: setup and configuration
 - Setup form with labels and help text, a masked password field, and separate errors for a wrong password, an unreachable miner, and unexpected errors. No default IP.
 - **Reconfigure** to change host, port or password, and **re-authentication** when the miner rejects the saved password.
-- **DHCP discovery** by hostname `futurebit-apollo*`. For a miner already set up, discovery updates its IP automatically.
+- **DHCP discovery** by hostname `futurebit-apollo*`. For a miner already set up, discovery updates its IP automatically on a wired connection; on Wi-Fi it asks for the password first.
 - Config entries are identified by the controller's MAC address instead of host:port. Existing entries are migrated at startup.
 - The default entry title follows the host after Reconfigure or a discovery IP update; a renamed title is kept.
 
