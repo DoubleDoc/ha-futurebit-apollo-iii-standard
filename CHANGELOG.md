@@ -4,6 +4,7 @@ All notable changes to the FutureBit Apollo III Standard integration. Newest fir
 
 ## Unreleased
 - README: new Supported models section. The Apollo III Full Package is partly supported (the miner side; not the Bitcoin node or pool software); the USB Apollo I/II are not supported.
+- README: the install section now leads with searching HACS or the Marketplace, since the integration is in the default list. Adding it as a custom repository is kept for pre-release testing.
 
 ## 1.0.10
 - Documentation only; the integration's behavior is unchanged.
