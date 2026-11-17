@@ -75,7 +75,7 @@
         "name": "Hashboard power"
       },
       "chip_freq_osc": {
-        "name": "Chip frequency (osc)"
+        "name": "Chip frequency"
       },
       "chip_speed_ghs": {
         "name": "Chip speed"

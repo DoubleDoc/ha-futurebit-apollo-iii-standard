@@ -66,7 +66,7 @@ Unofficial and not affiliated with FutureBit.
 ### Sensors
 | Group | Entities |
 |---|---|
-| Performance | Hashrate, Hashrate (1 h average), Hashrate target, Hashrate target setting, Chip speed, Chip frequency (osc), Mining efficiency, Mining efficiency (1 h average) |
+| Performance | Hashrate, Hashrate (1 h average), Hashrate target, Hashrate target setting, Chip speed, Chip frequency, Mining efficiency, Mining efficiency (1 h average) |
 | Power | Hashboard power, Hashboard current, Board voltage, Hashboard energy (estimated) |
 | Thermal | Hashboard temperature, Miner average temperature, Controller temperature, Miner fan speed, Fan PWM, Fan control setting |
 | Pool | Pool accepted shares, Pool rejected shares |
@@ -95,7 +95,6 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 
 - **Preset hashrate targets** (Super ECO, ECO and so on) are not published by FutureBit. `Hashrate target` shows the target the miner itself reports while running.
 - **Miner uptime can read too long.** The controller has no real-time clock, so after a reboot its clock jumps forward when it syncs, and the miner's uptime includes that jump. The Apollo dashboard shows the same value.
-- **Chip frequency (osc)** has no unit, because FutureBit does not document what the value means.
 - **Apollo III Full Package** (with the Bitcoin node) and the older USB Apollo I/II are not supported.
 - **Pool configuration** (URL, worker, password) can't be viewed or changed here and isn't tracked by `Restart needed`. `Pool host` shows only the pool currently in use.
 

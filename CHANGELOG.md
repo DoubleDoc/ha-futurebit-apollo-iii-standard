@@ -2,6 +2,10 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.6
+- `Chip frequency (osc)` is now `Chip frequency`, in MHz. Comparing Super ECO (409) with Eco (614) on a real miner showed that the hashrate per chip scales exactly with this value, about 932 hashes per clock, so it is the chip clock in MHz. It is set by the power mode. The entity ID is unchanged.
+- Home Assistant may show a one-time repair because the sensor's long-term statistics gain a unit; choose to keep or delete the old data.
+
 ## 1.0.5
 - Setup: a second setup for a miner that already has one open now shows a message instead of the raw reason `already_in_progress`.
 - `Hashboard energy estimated` is renamed `Hashboard energy (estimated)` (display name only; the entity ID is unchanged).

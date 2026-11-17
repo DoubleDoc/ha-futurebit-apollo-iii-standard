@@ -2,7 +2,7 @@
 import logging
 from datetime import datetime, timedelta, timezone
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
-from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, UnitOfElectricPotential, PERCENTAGE
+from homeassistant.const import UnitOfTemperature, UnitOfPower, UnitOfElectricCurrent, UnitOfElectricPotential, UnitOfFrequency, PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import dt as dt_util
@@ -70,8 +70,10 @@ SPECS = [
     ('solutions','miner',('slots','int_0','solutions'),1,None,None,None,True),
     ('hardware_errors','miner',('master','intervals','int_0','errors'),1,None,None,SensorStateClass.TOTAL_INCREASING,True),
     ('chip_speed_ghs','miner',('master','intervals','int_30','chipSpeed'),1,'GH/s',None,SensorStateClass.MEASUREMENT,False),
-    # Raw `osc` value: FutureBit doesn't document its unit, so none is claimed.
-    ('chip_freq_osc','miner',('master','osc'),1,None,None,SensorStateClass.MEASUREMENT,False),
+    # `osc` is the chip clock in MHz (FutureBit's -osc / "frequency" setting). Verified
+    # on a live miner: 409 in Super ECO, 614 in Eco, and chip speed / osc stays ~932
+    # hashes per clock in both. It is fixed per power mode, not a live tuner value.
+    ('chip_freq_osc','miner',('master','osc'),1,UnitOfFrequency.MEGAHERTZ,SensorDeviceClass.FREQUENCY,SensorStateClass.MEASUREMENT,False),
     ('hashrate_1h_ths','miner',('master','intervals','int_3600','bySol'),0.001,'TH/s',None,SensorStateClass.MEASUREMENT,False),
     ('spi_errors','miner',('master','errorSpi'),1,None,None,None,True),
     ('active_boards','miner',('master','boards'),1,None,None,None,True),

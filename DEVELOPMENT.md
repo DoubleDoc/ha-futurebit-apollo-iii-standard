@@ -37,6 +37,7 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 - **Settings apply only at miner start.** `Settings.update` rewrites the config file; the miner reads it once. `configurator.js` uses `minerHashrate` only in `custom` mode, spells Super ECO `supereco` on the command line, treats 0 or null fan values as unset, and lets a fixed PWM override the temperature target. `restart_needed.py` mirrors that logic.
 - **No RTC on the controller:** after a reboot, NTP jumps the clock forward and `master.upTime` includes the jump.
 - **Stats staleness:** `stats.date` updates about every 10 s; the dashboard treats more than 1 minute as inactive.
+- **Chip frequency:** `master.osc` is the chip clock in MHz, fixed per power mode (409 in Super ECO, 614 in Eco on a 21-chip board); `int_30.chipSpeed` / `osc` stays about 932 hashes per clock. FutureBit's code calls the same value `frequency` and shows it in MHz on the older Apollos.
 - **Hostname** is `futurebit-apollo-3` on every unit, so entries are keyed by the controller MAC (`Mcu.stats.network[eth0].mac`).
 
 ### Modules

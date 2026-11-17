@@ -48,6 +48,17 @@ async def test_setup_creates_entities(hass: HomeAssistant, fake_miner, config_en
     assert unavailable == []
 
 
+async def test_chip_frequency_is_mhz(hass: HomeAssistant, fake_miner, config_entry) -> None:
+    await setup(hass, config_entry)
+    entity_id = er.async_get(hass).async_get_entity_id(
+        "sensor", DOMAIN, f"{config_entry.entry_id}_chip_freq_osc")
+    state = hass.states.get(entity_id)
+    assert state.state == "409"
+    assert state.attributes["unit_of_measurement"] == "MHz"
+    assert state.attributes["device_class"] == "frequency"
+    assert state.attributes["friendly_name"].endswith("Chip frequency")
+
+
 async def test_stale_stats_make_miner_sensors_unavailable(hass: HomeAssistant, fake_miner, config_entry) -> None:
     fake_miner.stats["date"] = "2020-01-01T00:00:00+00:00"
     original = fake_miner.answer
