@@ -106,14 +106,13 @@ Error messages that appear in the miner's log are also counted. A deliberately s
 - **Entities unavailable:** the miner's stats have not updated for a minute, or Home Assistant cannot reach it. `Miner online` has `stats_stale` and `service_status` attributes to tell which.
 - **Reporting a problem:** open an issue and attach the diagnostics file (device page > three dots > **Download diagnostics**). Passwords, MAC and IP addresses and the pool username are removed from it.
 - **Debug logs:** go to **Settings > Devices & services > FutureBit Apollo III Standard**, open the menu (three dots) and choose **Enable debug logging**. Reproduce the problem, then choose **Disable debug logging**; Home Assistant downloads the log file. No restart is needed.
-  To keep debug logging on across restarts instead, add this to `configuration.yaml` (merge it into an existing `logger:` section if you have one) and restart:
+  To keep debug logging on across restarts instead, add this to `configuration.yaml` and restart. If you already have a `logger:` section, add only the `custom_components.apollo_iii` line under its `logs:`.
   ```yaml
   logger:
-    default: warning
     logs:
       custom_components.apollo_iii: debug
   ```
-  Keep the `default:` line: without it, Home Assistant logs everything at debug level.
+  This changes only this integration's log level. Remove the line and restart when you are done.
 
 ## Authorship
 
