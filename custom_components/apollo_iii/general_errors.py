@@ -257,8 +257,15 @@ class GeneralErrorState:
                     and target and avg5 is not None and avg5 < FAULT_LOW_HASHRATE * target * 1000):
                 conditions.add("low_hashrate")
 
+            # Chips throw many errors while the miner tunes after a start, so the
+            # 5-minute rate stays high for minutes after every restart or mode
+            # change. Check only after the startup grace, and only while errors
+            # are still high now (30 s rate), not just left over in the average.
             error_rate = _num((intervals.get("int_300") or {}).get("errorRate"))
-            if error_rate is not None and error_rate > FAULT_ERROR_RATE:
+            error_now = _num((intervals.get("int_30") or {}).get("errorRate"))
+            if (uptime > FAULT_STARTUP_GRACE and error_rate is not None
+                    and error_rate > FAULT_ERROR_RATE
+                    and (error_now is None or error_now > FAULT_ERROR_RATE)):
                 conditions.add("high_error_rate")
 
             pwr_on, pwr_target = _num(slot.get("pwrOn")), _num(slot.get("pwrOnTarget"))

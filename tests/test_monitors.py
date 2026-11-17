@@ -46,7 +46,8 @@ def clock(monkeypatch):
     return c
 
 
-def miner_data(clock, uptime=1_000_000, ghs=8000.0, error_rate=0.7, reconnects=0, online=True, stale=False):
+def miner_data(clock, uptime=1_000_000, ghs=8000.0, error_rate=0.7, error_now=None, reconnects=0,
+               online=True, stale=False):
     raw = load("miner")
     stats = raw["Miner"]["stats"]["result"]["stats"]
     s = stats[0]
@@ -55,6 +56,7 @@ def miner_data(clock, uptime=1_000_000, ghs=8000.0, error_rate=0.7, reconnects=0
     s["master"]["intervals"]["int_30"]["bySol"] = ghs
     s["master"]["intervals"]["int_300"]["bySol"] = ghs
     s["master"]["intervals"]["int_300"]["errorRate"] = error_rate
+    s["master"]["intervals"]["int_30"]["errorRate"] = error_rate if error_now is None else error_now
     s["slots"]["int_0"]["ghs"] = ghs
     s["pool"]["intervals"]["int_0"]["reconnections"] = reconnects
     return {"online": {"status": "online" if online else "offline"}, "stats": stats, "stale": stale}
@@ -113,6 +115,30 @@ def test_condition_counts_after_hold_and_clears(monitor, clock, kwargs, rule, ho
     assert monitor.count == 1  # once per episode
     run(monitor, clock, miner_data, 15)
     assert monitor.active_conditions == [] and not monitor.active
+
+
+def test_startup_errors_are_not_a_fault(monitor, clock) -> None:
+    """Live case: a mode change from HA restarted the miner; at 4 minutes of
+    uptime the 5-minute error rate read 11.9 % while the 30 s rate was 0.2 %."""
+    monitor.api.last_write = clock.mono  # mode change + restart sent from HA
+    start = clock.mono
+    run(monitor, clock, lambda c: miner_data(c, uptime=c.mono - start, error_rate=11.9,
+                                             error_now=15.0), 240)
+    run(monitor, clock, lambda c: miner_data(c, uptime=c.mono - start, error_rate=11.9,
+                                             error_now=0.2), 300)
+    assert monitor.count == 0 and not monitor.active
+
+
+def test_high_errors_after_startup_still_count(monitor, clock) -> None:
+    run(monitor, clock, lambda c: miner_data(c, uptime=1_000_000 + c.mono, error_rate=9.0,
+                                             error_now=9.0), 120)
+    assert monitor.active_conditions == ["high_error_rate"] and monitor.count == 1
+
+
+def test_error_spike_already_over_is_not_a_fault(monitor, clock) -> None:
+    run(monitor, clock, lambda c: miner_data(c, uptime=1_000_000 + c.mono, error_rate=9.0,
+                                             error_now=0.5), 300)
+    assert monitor.count == 0 and not monitor.active
 
 
 def test_frozen_stats(monitor, clock) -> None:

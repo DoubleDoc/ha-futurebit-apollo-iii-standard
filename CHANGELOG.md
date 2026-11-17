@@ -2,6 +2,9 @@
 
 All notable changes to the FutureBit Apollo III Standard integration. Newest first.
 
+## 1.0.7
+- Fault monitor: a miner restart or power-mode change no longer counts as `High chip error rate`. The chips throw many errors while the miner tunes after a start, which kept the 5-minute error rate above 5 % for several minutes. The check now waits 5 minutes after a start, like the hashrate checks, and counts only while the 30-second rate is also above 5 %.
+
 ## 1.0.6
 - `Chip frequency (osc)` is now `Chip frequency`, in MHz. Comparing Super ECO (409) with Eco (614) on a real miner showed that the hashrate per chip scales exactly with this value, about 932 hashes per clock, so it is the chip clock in MHz. It is set by the power mode. The entity ID is unchanged.
 - Home Assistant may show a one-time repair because the sensor's long-term statistics gain a unit; choose to keep or delete the old data.

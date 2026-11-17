@@ -84,7 +84,7 @@ Unofficial and not affiliated with FutureBit.
 | Miner stats stopped updating (frozen miner) | 1 minute |
 | No hashrate (after 5 minutes of uptime) | 30 seconds |
 | 5-minute hashrate below half of the target (after 15 minutes of uptime) | 5 minutes |
-| Chip error rate above 5 % | 1 minute |
+| Chip error rate above 5 %, over 5 minutes and still in the last 30 seconds (after 5 minutes of uptime) | 1 minute |
 | Hashboard not powered | 1 minute |
 | Pool reconnection | immediately |
 | Miner restarted without anyone asking | immediately |
