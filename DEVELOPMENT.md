@@ -37,8 +37,23 @@ Login is `Auth.login(password)`, which returns a JWT. A wrong password is a Grap
 - **Settings apply only at miner start.** `Settings.update` rewrites the config file; the miner reads it once. `configurator.js` uses `minerHashrate` only in `custom` mode, spells Super ECO `supereco` on the command line, treats 0 or null fan values as unset, and lets a fixed PWM override the temperature target. `restart_needed.py` mirrors that logic.
 - **No RTC on the controller:** after a reboot, NTP jumps the clock forward and `master.upTime` includes the jump.
 - **Stats staleness:** `stats.date` updates about every 10 s; the dashboard treats more than 1 minute as inactive.
-- **Chip frequency:** `master.osc` is the chip clock in MHz, fixed per power mode (409 in Super ECO, 614 in Eco on a 21-chip board); `int_30.chipSpeed` / `osc` stays about 932 hashes per clock. FutureBit's code calls the same value `frequency` and shows it in MHz on the older Apollos.
+- **Chip frequency:** `master.osc` is the chip clock in MHz, fixed per power mode (see [Measured power modes](#measured-power-modes)); `int_30.chipSpeed` / `osc` stays about 930–945 hashes per clock. FutureBit's code calls the same value `frequency` and shows it in MHz on the older Apollos.
 - **Hostname** is `futurebit-apollo-3` on every unit, so entries are keyed by the controller MAC (`Mcu.stats.network[eth0].mac`).
+
+### Measured power modes
+Measured on 2026-11-16 on one Apollo III Standard (21 chips, Web OS v2.1.3) at one room temperature. Each preset was started from Home Assistant with a miner restart and sampled every 15 s from the API; steady state is the mean of about 3 minutes of samples after the start-up errors cleared. Board voltage, fan PWM and the hashrate target come from the DVFS log.
+
+| Mode | Chip freq | Hashrate | Power | Efficiency | Max chip temp | Board voltage | Fan PWM | Stable at | Peak temp | Peak power |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Super ECO | 409 MHz | 8.01 TH/s | 91 W | 11.3 J/TH | 56 °C | 5.37 V | 14 % | 190 s | 60 °C | 110 W |
+| Eco | 614 MHz | 12.11 TH/s | 166 W | 13.7 J/TH | 65 °C | 6.11 V | 28 % | 220 s | 71 °C | 187 W |
+| Balanced | 767 MHz | 15.19 TH/s | 243 W | 16.0 J/TH | 73 °C | 6.64 V | 47 % | 241 s | 82 °C | 275 W |
+| Turbo | 921 MHz | 18.23 TH/s | 340 W | 18.6 J/TH | 81 °C | 7.12 V | 100 % | 300 s | 90 °C | 369 W |
+
+- "Stable at" is miner uptime after which every sample stayed within 5 % of the steady hashrate with the 30-second chip error rate under 5 %. Peak values cover the run from restart to the end of sampling.
+- Every start has a burst of chip errors (peaks of 66–93 %). The 30-second rate falls under 5 % within 171–280 s, but the 5-minute rate keeps the burst until 370–420 s. That is why the `high_error_rate` check waits out the startup grace and also requires the 30-second rate.
+- The tuner phase read `TUNE_STEPPING_UP` and the DVFS state `NORMAL` in every mode.
+- Turbo runs the fan at 100 % PWM, so it has no cooling headroom.
 
 ### Modules
 | File | Role |
