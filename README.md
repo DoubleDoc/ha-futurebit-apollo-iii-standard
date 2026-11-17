@@ -104,7 +104,7 @@ Updates appear in HACS and as an update entity; restart Home Assistant after upd
 | Pool reconnection | immediately |
 | Miner restarted without anyone asking | immediately |
 
-Error messages that appear in the miner's log are also counted. A deliberately stopped miner, and restarts within 15 minutes of a start, stop, restart or setting change, are not faults.
+Error messages that appear in the miner's log are also counted. A `no ASIC is detected for brd N` message (the hashboard's chips were not found at start) counts as a serious fault with category `asic`, once per miner start. Because the log is only a short snapshot that scrolls quickly, the same failure is also caught by the stats checks: an unpowered hashboard, or no hashrate after 5 minutes. A deliberately stopped miner, and restarts within 15 minutes of a start, stop, restart or setting change, are not faults.
 
 ## Known limitations
 
